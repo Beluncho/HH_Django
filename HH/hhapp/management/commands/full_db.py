@@ -24,12 +24,21 @@ def hh_parce(vacancy, area):
         published = result['published_at']
         vacancy_name = result['name']
         url_vac = result['alternate_url']
+        salary = result['salary']
+        if salary:
+            salary_from = int(result['salary']['from'])
+        else:
+            salary_from = 0
+
+
 
         em = Employer.objects.get_or_create(employer_name=employer)[0]
         Vacancies.objects.create(vac_name=vacancy_name,
                                  employer = em,
                                  published=published,
-                                 url_vac=url_vac)
+                                 url_vac=url_vac,
+                                 salaryFrom=salary_from)
+
     return results['items']
 if __name__ == '__main__':
     hh_parce('python developer', 'Москва')
