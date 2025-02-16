@@ -15,6 +15,7 @@ class Vacancies(Model):
     url_vac = URLField()
     employer = ForeignKey(Employer, on_delete=models.CASCADE)
     salaryFrom = IntegerField(default=0)
+    
 
     def __str__(self):
         return self.vac_name
