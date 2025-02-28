@@ -18,6 +18,22 @@
         </header>
 {% endblock %}
 
+{% block navigation %}
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#vacancy_create">New vacancy</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#employers">Employers</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+{% endblock %}
+
         <!-- About-->
 {% block section_about %}
         <section class="page-section bg-primary" id="about">
@@ -29,6 +45,13 @@
                         <hr class="divider divider-light" />
                         <p class="text-white-75 mb-4">Python developer, Moscow</p>
                         <a class="btn btn-light btn-xl" href="#services">Get Started!</a>
+                        <hr/>
+                        <h1 class="text-white mt-0">Or</h1>
+                        <hr class="divider divider-light" />
+                        <h2></h2>
+                        <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy_create' %}">
+                            Create vacancy
+                        </a>
                     </div>
 
                 </div>
@@ -75,19 +98,26 @@
                     </div>
                 </div>
             </div>
-            <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' id=item.id %}">Vacancy</a>
+            <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' pk=item.pk %}">Vacancy</a>
             {% endfor %}
+            <hr/>
+            <h1 class="text-center mt-0">Create new vacancy</h1>
+            <a class="btn btn-light btn-xl form-control" id="vacancy_create" href="{% url 'hhapp:vacancy_create' %}">Create vacancy</a>
+            <hr/>
+            <h1 class="text-center mt-0">Watch all employers</h1>
+            <a class="btn btn-light btn-xl form-control" id="employers" href="{% url 'hhapp:employers_list' %}">Employers</a>
         </section>
 {% endblock %}
 
 {% block section_contact %}
 <section class="page-section" id="contact">
 
-<form method="post" id="contactForm" >
-    {% csrf_token %}
-    {{ form.as_p }}
+    <form method="post" id="contactForm" >
+        {% csrf_token %}
+        {{ form.as_p }}
 
-    <div class="d-grid"><button class="btn-primary btn-light btn-xl" id="submitButton" type="submit">send</button></div>
-</form>
+        <button class="btn-primary btn-light btn-xl" id="submitButton" type="submit">send</button>
+
+    </form>
 </section>
 {% endblock %}
