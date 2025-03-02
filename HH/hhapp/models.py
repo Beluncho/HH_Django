@@ -1,7 +1,9 @@
+from tkinter.constants import CASCADE
+
 from django.db import models
 from django.db.models import Model, CharField, TextField, DateTimeField, ForeignKey
 from django.db.models import  URLField, FloatField, IntegerField
-
+from userapp.models import WebSiteUser
 
 # дублируются данные employer и employer_name,
 # но поля таблиц разные наследование не применимо.
@@ -17,7 +19,7 @@ class Vacancies(Model):
     url_vac = URLField()
     employer = ForeignKey(Employer, on_delete=models.CASCADE)
     salaryFrom = IntegerField(default=0)
-    
+    user = ForeignKey(WebSiteUser, on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.vac_name

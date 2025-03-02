@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os.path
 from pathlib import Path
 
-from django.conf.global_settings import STATICFILES_DIRS, MEDIA_URL, MEDIA_ROOT, EMAIL_BACKEND
+from django.conf.global_settings import STATICFILES_DIRS, MEDIA_URL, MEDIA_ROOT, EMAIL_BACKEND, AUTH_USER_MODEL, \
+    LOGIN_REDIRECT_URL, LOGOUT_REDIRECT_URL
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'hhapp'
+    'hhapp',
+    'userapp'
 ]
 
 MIDDLEWARE = [
@@ -128,6 +130,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #Console backend
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Переназначение пользователя
+AUTH_USER_MODEL = 'userapp.WebSiteUser'
+
+# Переходы
+# after login
+LOGIN_REDIRECT_URL = '/'
+# after logout
+LOGOUT_REDIRECT_URL = '/'
+#Login
+LOGIN_URL = '/user/login/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
