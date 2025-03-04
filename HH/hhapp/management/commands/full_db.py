@@ -26,7 +26,10 @@ def hh_parce(vacancy, area):
         url_vac = result['alternate_url']
         salary = result['salary']
         if salary:
-            salary_from = int(result['salary']['from'])
+            if result['salary']['from']:
+                salary_from = int(result['salary']['from'])
+            else:
+                salary_from = 0
         else:
             salary_from = 0
 
