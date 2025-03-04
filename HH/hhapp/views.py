@@ -1,6 +1,6 @@
 from symtable import Class
 
-
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import render, get_list_or_404, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
@@ -58,13 +58,16 @@ class FormPostValidMixin(FormMixin):
     def form_valid(self, form):
         return super().form_valid(form)
 
-
-class VacancyCreateView(CreateView,FormPostValidMixin):
-    fields = '__all__'
+# LoginRequiredMixin - first
+class VacancyCreateView(LoginRequiredMixin, CreateView, FormPostValidMixin):
+    fields = ('vac_name','url_vac', 'employer', 'salaryFrom')
     model = Vacancies
     success_url = reverse_lazy('hhapp:index')
     template_name = 'hhapp/vacancy_create.html'
 
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 
 class EmployersListView(ListView):
@@ -79,11 +82,14 @@ class EmployerDetailView(DetailView,RemoveDuplicContextMixin):
     model = Employer
     template_name = 'hhapp/employer_detail.html'
 
-class EmployerCreateView(CreateView, RemoveDuplicContextMixin, FormPostValidMixin):
+class EmployerCreateView(UserPassesTestMixin, CreateView, RemoveDuplicContextMixin, FormPostValidMixin):
     fields = '__all__'
     model = Employer
     success_url = reverse_lazy('hhapp:employers_list')
     template_name = 'hhapp/employer_create.html'
+
+    def test_func(self):
+        return self.request.user.is_employer
 
 class EmployerUpdateView(UpdateView):
     fields = '__all__'
