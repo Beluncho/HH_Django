@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block section_services %}
+        <section class="page-section" id="services">
+            {% for item in employers %}
+            <div class="container px-4 px-lg-5">
+                <hr class="divider" />
+
+                <a class="text-center mt-0" href="{% url 'hhapp:employer_detail' pk=item.pk %}"
+                >{{ item.employer_name }}</a>
+
+                <a class="btn btn-light btn-xl form-control"
+               href="{% url 'hhapp:employer_update' pk=item.pk %}">Change employer
+                </a>
+                <a class="btn btn-light btn-xl form-control"
+               href="{% url 'hhapp:employer_delete' pk=item.pk %}">Delete employer
+                </a>
+
+            </div>
+
+            {% endfor %}
+            <hr class="divider divider-light "/>
+            <h1 class="text-black font-weight-bold">Create employer</h1>
+            <a class="btn btn-light btn-xl form-control"
+               href="{% url 'hhapp:employer_create' %}">Create employer
+            </a>
+        </section>
+{% endblock %}
+
+{% block section_contact %}
+<section class="page-section" id="contact">
+    <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">Home page</a>
+</section>
+{% endblock %}
+
