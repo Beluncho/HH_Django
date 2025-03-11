@@ -82,7 +82,7 @@ class EmployerDetailView(DetailView,RemoveDuplicContextMixin):
     model = Employer
     template_name = 'hhapp/employer_detail.html'
 
-class EmployerCreateView(UserPassesTestMixin, CreateView, RemoveDuplicContextMixin, FormPostValidMixin):
+class EmployerCreateView(LoginRequiredMixin,UserPassesTestMixin, CreateView, RemoveDuplicContextMixin, FormPostValidMixin):
     fields = '__all__'
     model = Employer
     success_url = reverse_lazy('hhapp:employers_list')
