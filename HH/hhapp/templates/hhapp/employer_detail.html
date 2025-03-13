@@ -4,8 +4,24 @@
         <section class="page-section" id="services">
 
                 <h2 class="text-center mt-0">{{object.employer_name}}</h2>
+            {% for vacancy in object.employer_vacancies.all %}
+                {{ vacancy.vac_name }}
+            <p></p>
+            <hr>
+            {% endfor %}
+
+            <div class="text-white col-lg-3 col-md-6 text-center post-form">
+                    <form method="post"  action="{% url 'hhapp:employer_vacancy_create' pk=object.pk %}">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+
+                    <button class="btn-primary btn-light btn-xl"
+                            id="submitButton" type="submit">send</button>
+                    </form>
+            </div>
 
         </section>
+
 {% endblock %}
 
 {% block section_contact %}

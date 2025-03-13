@@ -17,7 +17,7 @@ class Vacancies(Model):
     published = DateTimeField(auto_now_add=True)
     vac_name = CharField(max_length=50)
     url_vac = URLField()
-    employer = ForeignKey(Employer, on_delete=models.CASCADE)
+    employer = ForeignKey(Employer, on_delete=models.CASCADE, related_name='employer_vacancies')
     salaryFrom = IntegerField(default=0)
     user = ForeignKey(WebSiteUser, on_delete=models.CASCADE)
 

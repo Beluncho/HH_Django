@@ -1,14 +1,14 @@
 from symtable import Class
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import render, get_list_or_404, HttpResponseRedirect
+from django.shortcuts import render, get_list_or_404, HttpResponseRedirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from django.views.generic.base import ContextMixin
 from django.views.generic.edit import FormMixin
 
 from .models import Vacancies, Employer
-from .forms import ContactForm
+from .forms import ContactForm, VacanciesEmployerForm
 from django.core.mail import send_mail
 
 
@@ -82,9 +82,37 @@ class EmployersListView(ListView):
     def get_queryset(self):
         return Employer.objects.all()
 
-class EmployerDetailView(DetailView,RemoveDuplicContextMixin):
+class EmployerDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView,RemoveDuplicContextMixin):
     model = Employer
     template_name = 'hhapp/employer_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = VacanciesEmployerForm()
+        return context
+
+    def test_func(self):
+        return self.request.user.is_employer
+
+class VacanciesEmployerCreateView(CreateView):
+    model = Vacancies
+    template_name = 'hhapp/employer_detail.html'
+    form_class = VacanciesEmployerForm
+
+    def post(self, request, *args, **kwargs):
+        self.employer_pk = kwargs['pk']
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        user = self.request.user
+        form.instance.user = user
+        employer = get_object_or_404(Employer, pk=self.employer_pk)
+        form.instance.employer = employer
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('hhapp:employer_detail', kwargs={'pk': self.employer_pk})
+
 
 class EmployerCreateView(LoginRequiredMixin,UserPassesTestMixin, CreateView, RemoveDuplicContextMixin, FormPostValidMixin):
     fields = '__all__'
@@ -95,16 +123,22 @@ class EmployerCreateView(LoginRequiredMixin,UserPassesTestMixin, CreateView, Rem
     def test_func(self):
         return self.request.user.is_employer
 
-class EmployerUpdateView(UpdateView):
+class EmployerUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
     fields = '__all__'
     model = Employer
     success_url = reverse_lazy('hhapp:employers_list')
     template_name = 'hhapp/employer_create.html'
 
-class EmployerDeleteView(DeleteView):
+    def test_func(self):
+        return self.request.user.is_employer
+
+class EmployerDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
     template_name = 'hhapp/employer_delete_confirm.HTML'
     model = Employer
     success_url = reverse_lazy('hhapp:employers_list')
+
+    def test_func(self):
+        return self.request.user.is_employer
 
 # def main_view(request):
 #     vacancies = Vacancies.objects.all()

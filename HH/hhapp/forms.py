@@ -1,4 +1,5 @@
-from django.forms import Form, CharField, EmailField, ModelForm, Textarea, TextInput, NumberInput
+from django.forms import Form, CharField, EmailField, ModelForm, Textarea, TextInput, NumberInput, URLField, \
+    IntegerField
 from django.core.mail import send_mail
 from hhapp.models import Vacancies
 
@@ -22,6 +23,15 @@ class ContactForm(Form):
                       ['test@test.com'],
                       fail_silently=True)
 
+
+class VacanciesEmployerForm(ModelForm):
+    vac_name = CharField(widget=TextInput(attrs={'placeholder': 'Vacancy', 'class': 'form-control'}))
+    url_vac = URLField(widget=TextInput(attrs={'placeholder': 'URL', 'class': 'form-control'}))
+    salaryFrom = IntegerField(widget=NumberInput(attrs={'placeholder': 'Salary From', 'class': 'form-control'}) )
+
+    class Meta:
+        model = Vacancies
+        fields = ('vac_name', 'url_vac', 'salaryFrom')
 
 
 

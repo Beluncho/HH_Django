@@ -6,7 +6,7 @@ from django.urls import reverse, reverse_lazy
 from faker import Faker
 from .models import Employer, Vacancies
 from userapp.models import WebSiteUser
-from .views import ContactView, VacDetailView
+from .views import ContactView, VacDetailView, VacancyCreateView, EmployerCreateView
 from mixer.backend.django import mixer
 
 
@@ -15,6 +15,9 @@ class ViewsHHappTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.fake = Faker()
+
+        VacancyCreateView.create_vacancy = mixer.blend(Vacancies)
+        EmployerCreateView.create_employer = mixer.blend(Employer)
 
     def test_statuses(self):
         response = self.client.get('/')
@@ -25,14 +28,6 @@ class ViewsHHappTest(TestCase):
 
         response = self.client.get('/employers_list/')
         self.assertEqual(response.status_code, 200), 'Not found list of employers'
-
-        response = self.client.get('http://127.0.0.1:8000/#services/vacancy/1/')
-        self.assertEqual(response.status_code, 200) , 'Not found vacancy_id=1'
-        self.assertTrue('vacancies' in response.context)
-
-        response = self.client.get('http://127.0.0.1:8000/#employers/employers_list/employer_detail/1/')
-        self.assertEqual(response.status_code, 200), 'Not found employer_id=1'
-
 
 
     def test_login_required(self):
@@ -52,6 +47,19 @@ class ViewsHHappTest(TestCase):
         self.assertEqual(response.status_code, 302), ('error status code for not login user'
                                                       ' in create employer')
 
+        response = self.client.get('/employer_update/1/')
+        self.assertEqual(response.status_code, 302), ('error status code for not login user'
+                                                      ' in update employer')
+
+        response = self.client.get('/employer_delete/1/')
+        self.assertEqual(response.status_code, 302), ('error status code for not login user'
+                                                      ' in delete employer')
+
+        response = self.client.get('/employer_detail/1/')
+        self.assertEqual(response.status_code, 302), ('error status code for not login user'
+                                                      ' in detail employer')
+
+
         self.client.login(username=user_name, password=password)
 
         response = self.client.get('/vacancy_create/')
@@ -61,6 +69,18 @@ class ViewsHHappTest(TestCase):
         response = self.client.get('/employer_create/')
         self.assertEqual(response.status_code, 200), ('error status code for not login user'
                                                       ' in create employer')
+
+        response = self.client.get('/employer_detail/1/')
+        self.assertEqual(response.status_code, 200), ('error status code for login user'
+                                                      ' in detail employer')
+
+        response = self.client.get('/employer_update/1/')
+        self.assertEqual(response.status_code, 200), ('error status code for login user'
+                                                      ' in update employer')
+
+        response = self.client.get('/employer_delete/1/')
+        self.assertEqual(response.status_code, 200), ('error status code for login user'
+                                                      ' in delete employer')
 
         response = self.client.post('/user/logout/')
         self.assertEqual(response.status_code, 302), 'logout error'
