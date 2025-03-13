@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import WebSiteUser
+from .models import WebSiteUser, Profile
 
 # Register your models here.
 def give_is_employer(modeladmin, request, queryset):
@@ -13,3 +13,4 @@ class WebSiteUserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(WebSiteUser, WebSiteUserAdmin)
+admin.site.register(Profile)

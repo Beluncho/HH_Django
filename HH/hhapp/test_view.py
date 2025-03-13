@@ -76,5 +76,5 @@ class ViewsHHappTest(TestCase):
 
         self.client.login(username=user_name, password=password)
 
-        response = self.client.get('/employer_create/'), 'login user and not employer, create employer'
-        self.assertEqual(response.status_code, 403)
+        response = self.client.get('/employer_create/')
+        self.assertEqual(response.status_code, 403), 'login user and not employer, create employer'

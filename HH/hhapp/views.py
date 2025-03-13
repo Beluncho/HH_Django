@@ -21,6 +21,7 @@ class ContactView(FormView):
     form_class = ContactForm
     success_url = reverse_lazy('hhapp:index')
 
+
     def form_valid(self, form):
         """
         :param form: запоняемая форма
@@ -35,8 +36,10 @@ class VacanciesListView(ListView, ContactView):
     model = Vacancies
     template_name = 'hhapp/index.html'
     context_object_name = 'vacancies'
+    paginate_by = 5
+
     def get_queryset(self):
-        return Vacancies.objects.all
+        return Vacancies.objects.all()
 
 
 class RemoveDuplicContextMixin(ContextMixin):
@@ -74,6 +77,7 @@ class EmployersListView(ListView):
     model = Employer
     template_name = 'hhapp/employers_list.html'
     context_object_name = 'employers'
+    paginate_by = 5
 
     def get_queryset(self):
         return Employer.objects.all()

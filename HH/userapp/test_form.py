@@ -8,17 +8,17 @@ class RegistrationFormTestCaseFaker(TestCase):
         self.fake = Faker()
         self.pas = self.fake.password()
 
-    def test_reg_form_is_valid(self):
-        form_data = {
-            'username':f'{self.fake.user_name()}',
-            'password1':f'{self.pas}',
-            'password2':f'{self.pas}',
-            'email':f'{self.fake.email()}'
+        self.form_data = {
+            'username': f'{self.fake.user_name()}',
+            'password1': f'{self.pas}',
+            'password2': f'{self.pas}',
+            'email': f'{self.fake.email()}'
         }
+    def test_reg_form_is_valid(self):
 
-        form = RegistrationForm(data=form_data)
+        form = RegistrationForm(data=self.form_data)
 
-        self.assertTrue(form.is_valid())
+        self.assertTrue(form.is_valid()), 'registration form is valid,but return false'
 
     def test_reg_form_not_valid(self):
         form_data = {
@@ -30,4 +30,9 @@ class RegistrationFormTestCaseFaker(TestCase):
 
         form = RegistrationForm(data=form_data)
 
-        self.assertFalse(form.is_valid())
+        self.assertFalse(form.is_valid()), 'registration form not valid,but return true'
+
+    def test_save_profile(self):
+        form = RegistrationForm(data=self.form_data)
+
+        self.assertTrue(form.save()), 'WebSiteUser not save'
