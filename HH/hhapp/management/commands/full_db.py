@@ -25,6 +25,7 @@ def hh_parce(vacancy, area):
         vacancy_name = result['name']
         url_vac = result['alternate_url']
         salary = result['salary']
+
         if salary:
             if result['salary']['from']:
                 salary_from = int(result['salary']['from'])
@@ -40,7 +41,8 @@ def hh_parce(vacancy, area):
                                  employer = em,
                                  published=published,
                                  url_vac=url_vac,
-                                 salaryFrom=salary_from)
+                                 salaryFrom=salary_from,
+                                 )
 
     return results['items']
 if __name__ == '__main__':

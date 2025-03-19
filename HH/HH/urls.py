@@ -16,9 +16,31 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from rest_framework import routers
+from hhapp.api_views import EmployerViewSet, VacanciesViewSet
+
+router = routers.DefaultRouter()
+router.register(r'employers', EmployerViewSet)
+router.register(r'vacancies', VacanciesViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('hhapp.urls', namespace='hhapp')),
-    path('user/', include('userapp.urls', namespace= 'user'))
+    path('user/', include('userapp.urls', namespace= 'user')),
+    path('api/v0/', include(router.urls))
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+
+        # For django versions before 2.0:
+        # url(r'^__debug__/', include(debug_toolbar.urls)),
+
+    ] + urlpatterns

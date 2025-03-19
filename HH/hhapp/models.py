@@ -19,7 +19,7 @@ class Vacancies(Model):
     url_vac = URLField()
     employer = ForeignKey(Employer, on_delete=models.CASCADE, related_name='employer_vacancies')
     salaryFrom = IntegerField(default=0)
-    user = ForeignKey(WebSiteUser, on_delete=models.CASCADE)
+    user = ForeignKey(WebSiteUser, on_delete=models.CASCADE, db_index=True) # for run full_db deffault = 1
 
     def __str__(self):
         return f'{self.vac_name}, employer: {self.employer.employer_name}'

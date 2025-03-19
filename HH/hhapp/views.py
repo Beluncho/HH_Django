@@ -38,8 +38,9 @@ class VacanciesListView(ListView, ContactView):
     context_object_name = 'vacancies'
     paginate_by = 5
 
+
     def get_queryset(self):
-        return Vacancies.objects.all()
+        return Vacancies.objects.all().order_by('-id')
 
 
 class RemoveDuplicContextMixin(ContextMixin):
@@ -80,7 +81,7 @@ class EmployersListView(ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        return Employer.objects.all()
+        return Employer.objects.all().order_by('id')
 
 class EmployerDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView,RemoveDuplicContextMixin):
     model = Employer
@@ -139,6 +140,9 @@ class EmployerDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
 
     def test_func(self):
         return self.request.user.is_employer
+
+
+
 
 # def main_view(request):
 #     vacancies = Vacancies.objects.all()
