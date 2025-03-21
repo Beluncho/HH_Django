@@ -1,3 +1,5 @@
+import pprint
+
 from django.test import TestCase
 from .forms import ContactForm, VacanciesEmployerForm
 from faker import Faker

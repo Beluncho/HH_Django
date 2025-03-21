@@ -29,7 +29,7 @@
                     <ul class="navbar-nav ms-auto my-2 my-lg-0">
                         {% block navigation %}
                         {% endblock %}
-                        {% if user.is_authenticated is True %}
+                        {% if user.is_authenticated is False %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'user:login' %}">LogIn</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'user:registration' %}">RegForm</a></li>
                     </ul>
@@ -38,6 +38,7 @@
                                 {% csrf_token %}
                                 <button type="submit">Log Out</button>
                     </form>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'user:profile' pk=user.pk %}">Profile</a></li>
                     {% endif %}
                 </div>
             </div>
@@ -105,6 +106,7 @@
         <!-- SimpleLightbox plugin JS-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
         <!-- Core theme JS-->
+        {% block script %}{% endblock %}
         <script src="{% static 'js/scripts.js' %}"></script>
         <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
     </body>

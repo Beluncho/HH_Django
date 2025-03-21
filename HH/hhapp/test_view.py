@@ -1,8 +1,5 @@
-import pprint
-
 from django.test import Client
 from django.test import TestCase
-from django.urls import reverse, reverse_lazy
 from faker import Faker
 from .models import Employer, Vacancies
 from userapp.models import WebSiteUser

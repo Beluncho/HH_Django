@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'hhapp',
     'userapp',
     'rest_framework',
+    'rest_framework.authtoken',
 
     'django_cleanup.apps.CleanupConfig'
 ]
@@ -158,7 +159,11 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly']
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication']
 }
 
 INTERNAL_IPS = [

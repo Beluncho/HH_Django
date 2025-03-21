@@ -15,4 +15,5 @@ urlpatterns = [
     path('employer_vacancy_create/<int:pk>/', views.VacanciesEmployerCreateView.as_view(),
          name = 'employer_vacancy_create'),
 
+
 ]
