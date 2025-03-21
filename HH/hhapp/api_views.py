@@ -15,5 +15,5 @@ class EmployerViewSet(viewsets.ModelViewSet):
 class VacanciesViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication, TokenAuthentication]
     permission_classes = [IsAdminUser | IsEmployer | ReadOnly]
-    queryset = Vacancies.objects.all()
+    queryset = Vacancies.objects.select_related('user').all()
     serializer_class = VacanciesSerializer
