@@ -9,8 +9,9 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-import os.path
 from pathlib import Path
+import os
+from os import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-hfp+ba8a+m03-j)_bw5&x8u0==a(uj*0n=sm)fe40yaqdnfdut'
+SECRET_KEY = environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = int(environ.get('DEBUG', default=0))
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(' ')
 
 
 # Application definition
@@ -90,14 +91,26 @@ DATABASES = {
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    # },
+    # }, #for develop
 
-    'default': {
-        'NAME': 'sitedb',
-        'ENGINE': 'django.db.backends.postgresql',
-        'USER': 'django',
-        'PASSWORD': 'nu123456',
-        'HOST': 'localhost'
+#     'default': {
+#         'NAME': 'sitedb',
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'USER': 'django',
+#         'PASSWORD': 'nu123456',
+#         'HOST': 'localhost'
+#     }, #for server
+
+'default': {
+        # В случае, если в файле .env.prod или .env.dev были прописаны переменные
+        # будут использоваться они. Если переменной в окружении нет
+        # будет использоваться 2-ое значение
+        'ENGINE': environ.get('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': environ.get('POSTGRES_DB', BASE_DIR / 'db.sqlite3'),
+        'USER': environ.get('POSTGRES_USER', 'django'),
+        'PASSWORD': environ.get('POSTGRES_PASSWORD', 'nu123456'),
+        'HOST': environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -134,7 +147,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
@@ -143,7 +156,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = '/media/'
+MEDIA_URL = "/media/"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
