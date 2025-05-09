@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block header %}
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container px-4 px-lg-5 h-100">
+                <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+                    <div class="col-lg-8 align-self-end">
+                        <h1 class="text-white font-weight-bold">LogIn</h1>
+                        <hr class="divider" />
+
+                        <div class="text-white col-lg-6 col-md-6 text-center post-form">
+                            <form method="post">{% csrf_token %}
+
+                                {{ form.as_p }}
+
+                            <button class="btn-primary btn-light btn-xl"
+                                    id="submitButton" type="submit">Enter</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+{% endblock %}
+
+{% block section_contact %}
+<section class="page-section" id="contact">
+    <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">Home page</a>
+</section>
+{% endblock %}
