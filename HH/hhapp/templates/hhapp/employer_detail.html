@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block section_services %}
+        <section class="page-section" id="services">
+
+                <h2 class="text-center mt-0">{{object.employer_name}}</h2>
+
+        </section>
+{% endblock %}
+
+{% block section_contact %}
+<section class="page-section" id="contact">
+    <a class="btn btn-light btn-xl" href="{% url 'hhapp:employers_list' %}">Employers</a>
+</section>
+{% endblock %}
+
