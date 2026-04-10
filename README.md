@@ -109,6 +109,67 @@ GET	/api/vacancies/{id}/	Детальная информация о ваканс
 POST	/api/auth/login/	Вход через BasicAuth или SessionAuth
 Пример запроса к API:
 
+## 🐳 Запуск через Docker
+
+Проект полностью контейнеризирован и поддерживает два режима: разработка (development) и продакшен (production).
+
+### 📋 Основные команды Docker
+
+| Режим | Действие | Команда |
+|-------|----------|---------|
+| **DEV** | 🔨 Запуск с пересборкой | `docker-compose up --build` |
+| **DEV** | 🚀 Запуск в фоне | `docker-compose up -d --build` |
+| **DEV** | 🛑 Остановка | `docker-compose down` |
+| **DEV** | 📝 Применить миграции | `docker-compose exec web python manage.py migrate` |
+| **DEV** | 👤 Создать суперпользователя | `docker-compose exec web python manage.py createsuperuser` |
+| **DEV** | 📦 Собрать статику | `docker-compose exec web python manage.py collectstatic --noinput` |
+| **DEV** | 📊 Просмотр логов | `docker-compose logs -f` |
+| **DEV** | 🐚 Войти в контейнер | `docker-compose exec web bash` |
+| | | |
+| **PROD** | 🔨 Запуск с пересборкой | `docker-compose -f docker-compose.prod.yml up --build` |
+| **PROD** | 🚀 Запуск в фоне | `docker-compose -f docker-compose.prod.yml up -d --build` |
+| **PROD** | 🛑 Остановка | `docker-compose -f docker-compose.prod.yml down` |
+| **PROD** | 📝 Применить миграции | `docker-compose -f docker-compose.prod.yml exec web python manage.py migrate` |
+| **PROD** | 👤 Создать суперпользователя | `docker-compose -f docker-compose.prod.yml exec web python manage.py createsuperuser` |
+| **PROD** | 📦 Собрать статику | `docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput` |
+| **PROD** | 📊 Просмотр логов | `docker-compose -f docker-compose.prod.yml logs -f` |
+| **PROD** | 🐚 Войти в контейнер | `docker-compose -f docker-compose.prod.yml exec web bash` |
+| | | |
+| **ОБЩИЕ** | 🧹 Полная очистка (с удалением БД) | `docker-compose down -v` |
+| **ОБЩИЕ** | 🗑️ Удалить неиспользуемые образы | `docker image prune -a` |
+| **ОБЩИЕ** | ✅ Проверка статуса контейнеров | `docker ps` |
+
+### 🔧 Переменные окружения для Docker
+
+**Для разработки (`.env.dev`):**
+```env
+DEBUG=1
+SECRET_KEY=dev-secret-key-not-for-production
+DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
+POSTGRES_USER=django_user
+POSTGRES_PASSWORD=django_password
+POSTGRES_DB=django_db
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+```
+# 💡 Быстрый старт с Docker
+
+# 1. Клонируйте репозиторий
+git clone https://github.com/Beluncho/HH_Django.git
+cd HH_Django
+
+# 2. Для разработки
+docker-compose up -d --build
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+# Открыть http://localhost:8000
+
+# 3. Для продакшена
+docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml exec web python manage.py migrate
+docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput
+# Открыть http://localhost:1337
+
 ```bash
 curl -H 'Accept: application/json' http://127.0.0.1:8000/api/vacancies/
 
