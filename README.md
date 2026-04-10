@@ -1,3 +1,5 @@
+
+
 # HH Django Project - Job Search Platform
 
 [![Django Version](https://img.shields.io/badge/Django-5.1.6-green)](https://www.djangoproject.com/)
@@ -25,9 +27,11 @@
 ```bash
 git clone https://github.com/Beluncho/HH_Django.git
 cd HH_Django
-git checkout nu31-api  # Переключитесь на ветку с API
-2. Создание и активация виртуального окружения
-bash
+git checkout nu31-api  Переключитесь на ветку с API
+```
+### 2. Создание и активация виртуального окружения
+
+```bash
 # Windows
 python -m venv venv
 venv\Scripts\activate
@@ -35,10 +39,13 @@ venv\Scripts\activate
 # macOS/Linux
 python3 -m venv venv
 source venv/bin/activate
-3. Установка зависимостей
-bash
+```
+### 3. Установка зависимостей
+
+```bash
 pip install -r requirements.txt
-4. Настройка переменных окружения
+```
+### 4. Настройка переменных окружения
 Создайте файл .env в корне проекта:
 
 env
@@ -47,18 +54,21 @@ DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 ⚠️ Важно: Никогда не коммитьте .env файл в репозиторий! Добавьте его в .gitignore.
 
-5. Применение миграций и создание суперпользователя
-bash
+### 5. Применение миграций и создание суперпользователя
+```bash
 python manage.py migrate
 python manage.py createsuperuser
-6. Запуск сервера разработки
-bash
+```
+
+### 6. Запуск сервера разработки
+   
+```bash
 python manage.py runserver
 Сайт будет доступен: http://127.0.0.1:8000
 Админ-панель: http://127.0.0.1:8000/admin
-
-📁 Структура проекта
-text
+```
+### 📁 Структура проекта
+```text
 HH_Django/
 ├── HH/                      # Корневая папка проекта
 │   ├── HH/                  # Основная конфигурация Django
@@ -88,7 +98,9 @@ HH_Django/
 ├── nginx/                   # Конфигурация для продакшена
 ├── venv/                    # Виртуальное окружение (не коммитится)
 └── requirements.txt
-🔌 API Endpoints (REST API)
+```
+
+### 🔌 API Endpoints (REST API)
 Метод	URL	Описание
 GET	/api/vacancies/	Список вакансий (пагинация 20 элементов)
 POST	/api/vacancies/	Создание новой вакансии (требуется аутентификация)
@@ -97,24 +109,33 @@ GET	/api/vacancies/{id}/	Детальная информация о ваканс
 POST	/api/auth/login/	Вход через BasicAuth или SessionAuth
 Пример запроса к API:
 
-bash
+```bash
 curl -H 'Accept: application/json' http://127.0.0.1:8000/api/vacancies/
-🛠️ Управление проектом
-Запуск тестов
-bash
+
+```
+
+### 🛠️ Управление проектом
+#### Запуск тестов
+```bash
 python manage.py test
-Проверка покрытия кода тестами
-bash
+#### Проверка покрытия кода тестами
+```
+
+``` bash
 coverage run manage.py test
 coverage report
-Сбор статических файлов (для продакшена)
-bash
+```
+
+#### Сбор статических файлов (для продакшена)
+```bash
 python manage.py collectstatic
-⚠️ Важные замечания по безопасности
-Перед деплоем в продакшен необходимо:
+```
 
-Секретный ключ — вынести в переменные окружения:
+### ⚠️ Важные замечания по безопасности
+#### Перед деплоем в продакшен необходимо:
 
+#### Секретный ключ — вынести в переменные окружения:
+```bash
 python
 import os
 SECRET_KEY = os.getenv('SECRET_KEY')
@@ -140,8 +161,9 @@ DATABASES = {
     }
 }
 Настроить реальный Email backend (SMTP) вместо консольного
+```
 
-📦 Используемые технологии
+### 📦 Используемые технологии
 Backend: Django 5.1, Django REST Framework 3.15
 
 База данных: SQLite (dev) / PostgreSQL (рекомендуется для prod)
