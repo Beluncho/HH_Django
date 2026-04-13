@@ -179,9 +179,9 @@ curl -H 'Accept: application/json' http://127.0.0.1:8000/api/vacancies/
 #### Запуск тестов
 ```bash
 python manage.py test
-#### Проверка покрытия кода тестами
 ```
 
+#### Проверка покрытия кода тестами
 ``` bash
 coverage run manage.py test
 coverage report
