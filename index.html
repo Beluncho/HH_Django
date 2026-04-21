@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дипломный проект | HH_Django — платформа поиска работы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+
+        header h1 span {
+            color: #ffd700;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #ffd700;
+            color: #0f2027;
+            padding: 8px 20px;
+            border-radius: 30px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        section {
+            padding: 50px 0;
+            border-bottom: 1px solid #e1e8ed;
+        }
+
+        section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #0f2027;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: '';
+            width: 5px;
+            height: 35px;
+            background: #ffd700;
+            border-radius: 3px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .tech {
+            background: #eef2f7;
+            padding: 5px 14px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #203a43;
+        }
+
+        .tech-highlight {
+            background: #ffd700;
+            color: #0f2027;
+            font-weight: bold;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .commands {
+            background: #0f2027;
+            color: #ffd700;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .commands p {
+            margin: 8px 0;
+            color: #fff;
+        }
+
+        .commands span {
+            color: #ffd700;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #0f2027;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 15px;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #ffd700;
+            color: #0f2027;
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #0f2027;
+            color: #0f2027;
+        }
+
+        .btn-outline:hover {
+            background: #0f2027;
+            color: white;
+        }
+
+        .diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+
+        footer {
+            background: #0f2027;
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>🐍 <span>HH_Django</span></h1>
+        <p>Платформа поиска работы и анализа вакансий</p>
+        <div class="badge">🎓 Дипломный проект | Python-разработчик</div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- О проекте -->
+    <section>
+        <h2>📖 О проекте</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">🎯 Цель</h3>
+                <p>Разработать веб-приложение для публикации вакансий и резюме с полноценным REST API и контейнеризацией для лёгкого развёртывания.</p>
+            </div>
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">👥 Пользователи</h3>
+                <ul class="feature-list">
+                    <li>Соискатели (поиск работы, отклики)</li>
+                    <li>Работодатели (публикация вакансий)</li>
+                    <li>Администраторы (модерация)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Технологический стек -->
+    <section>
+        <h2>🛠 Технологический стек</h2>
+        <div class="tech-stack">
+            <span class="tech tech-highlight">Python 3.11+</span>
+            <span class="tech tech-highlight">Django 5.1</span>
+            <span class="tech tech-highlight">DRF 3.15</span>
+            <span class="tech">PostgreSQL</span>
+            <span class="tech">SQLite (dev)</span>
+            <span class="tech">Docker</span>
+            <span class="tech">Docker Compose</span>
+            <span class="tech">Nginx</span>
+            <span class="tech">Gunicorn</span>
+            <span class="tech">Pillow</span>
+            <span class="tech">django-cleanup</span>
+            <span class="tech">django-debug-toolbar</span>
+            <span class="tech">Pytest / Coverage</span>
+        </div>
+    </section>
+
+    <!-- Архитектура -->
+    <section>
+        <h2>🏗 Архитектура проекта</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>📦 Docker-инфраструктура</h3>
+                <div class="diagram">
+                    <pre style="background: none; padding: 0;">
+┌─────────────┐
+│   Nginx     │ :80  (prod) / :1337
+│  (прокси)   │
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│    web      │ :8000
+│ Django+     │
+│ Gunicorn    │
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│     db      │ :5432
+│ PostgreSQL  │
+└─────────────┘
+                    </pre>
+                </div>
+            </div>
+            <div class="card">
+                <h3>📁 Структура приложений</h3>
+                <ul class="feature-list">
+                    <li><strong>hhapp</strong> — вакансии, резюме, API</li>
+                    <li><strong>userapp</strong> — кастомная модель пользователя</li>
+                    <li><strong>templates</strong> — HTML-шаблоны</li>
+                    <li><strong>static/media</strong> — статика и загрузки</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Функционал -->
+    <section>
+        <h2>⚙️ Основной функционал</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>🌐 Веб-интерфейс</h3>
+                <ul class="feature-list">
+                    <li>Регистрация и авторизация (кастомная модель)</li>
+                    <li>Публикация и редактирование вакансий</li>
+                    <li>Создание и загрузка резюме (фото/файлы)</li>
+                    <li>Админ-панель для управления контентом</li>
+                    <li>Отправка email-уведомлений (консольный backend)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>🔌 REST API</h3>
+                <ul class="feature-list">
+                    <li>Пагинация (20 элементов на страницу)</li>
+                    <li>Аутентификация: Basic + Session</li>
+                    <li>Эндпоинты: /api/vacancies/, /api/resumes/</li>
+                    <li>Фильтрация через django-filter</li>
+                    <li>Поддержка Markdown для описаний</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Docker-команды (шпаргалка для защиты) -->
+    <section>
+        <h2>🐳 Docker: запуск проекта</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>🛠 Режим разработки</h3>
+                <div class="commands">
+                    <p><span>$</span> docker-compose up -d --build</p>
+                    <p><span>$</span> docker-compose exec web python manage.py migrate</p>
+                    <p><span>$</span> docker-compose exec web python manage.py createsuperuser</p>
+                    <p style="margin-top: 10px;">🌐 http://localhost:8000</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>🚀 Режим продакшена</h3>
+                <div class="commands">
+                    <p><span>$</span> docker-compose -f docker-compose.prod.yml up -d --build</p>
+                    <p><span>$</span> docker-compose -f docker-compose.prod.yml exec web python manage.py migrate</p>
+                    <p><span>$</span> docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput</p>
+                    <p style="margin-top: 10px;">🌐 http://localhost:1337</p>
+                </div>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 20px;">
+            <h3>📋 Остановка и очистка</h3>
+            <div class="commands">
+                <p><span>$</span> docker-compose down          # Остановка dev</p>
+                <p><span>$</span> docker-compose -f docker-compose.prod.yml down   # Остановка prod</p>
+                <p><span>$</span> docker-compose down -v       # Полная очистка с удалением БД</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Пример API -->
+    <section>
+        <h2>📡 Примеры API запросов</h2>
+        <div class="grid-2">
+            <div class="card">
+                <h3>GET /api/vacancies/</h3>
+                <div class="code-block">
+                    curl -H 'Accept: application/json' \<br>
+                    http://localhost:8000/api/vacancies/
+                </div>
+                <p style="margin-top: 10px; font-size: 0.85rem;">✅ Возвращает список вакансий с пагинацией</p>
+            </div>
+            <div class="card">
+                <h3>POST /api/vacancies/</h3>
+                <div class="code-block">
+                    curl -X POST \<br>
+                    -H "Authorization: Basic ..." \<br>
+                    -d "title=Python Dev&description=..." \<br>
+                    http://localhost:8000/api/vacancies/
+                </div>
+                <p style="margin-top: 10px; font-size: 0.85rem;">🔐 Требуется аутентификация</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ссылки -->
+    <section>
+        <h2>🔗 Ресурсы</h2>
+        <div>
+            <a href="https://github.com/Beluncho/HH_Django/tree/nu31-api" class="btn" target="_blank">🐙 GitHub проекта</a>
+            <a href="https://github.com/Beluncho/HH_Django/blob/nu31-api/README.md" class="btn btn-outline" target="_blank">📖 README.md</a>
+            <a href="#" class="btn btn-outline" onclick="alert('Демонстрация будет показана на защите в PyCharm'); return false;">🎥 Демонстрация →</a>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <div class="container">
+        <p>© 2025 Александр | Дипломный проект: HH_Django — платформа поиска работы</p>
+        <p style="margin-top: 10px; font-size: 0.8rem;">🐍 Python • Django • DRF • Docker • PostgreSQL</p>
+    </div>
+</footer>
+
+</body>
+</html>
