@@ -159,15 +159,19 @@ git clone https://github.com/Beluncho/HH_Django.git
 cd HH_Django
 
 # 2. Для разработки
+```
 docker-compose up -d --build
 docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py createsuperuser
+```
 # Открыть http://localhost:8000
 
 # 3. Для продакшена
+```
 docker-compose -f docker-compose.prod.yml up -d --build
 docker-compose -f docker-compose.prod.yml exec web python manage.py migrate
 docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput
+```
 # Открыть http://localhost:1337
 
 ```bash
