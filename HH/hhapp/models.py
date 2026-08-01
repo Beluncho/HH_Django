@@ -1,5 +1,3 @@
-from tkinter.constants import CASCADE
-
 from django.db import models
 from django.db.models import Model, CharField, TextField, DateTimeField, ForeignKey
 from django.db.models import  URLField, FloatField, IntegerField

@@ -121,6 +121,10 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.dev.example
+!.env.prod.example
+LOCAL_SECRETS.md
 .venv
 env/
 venv/

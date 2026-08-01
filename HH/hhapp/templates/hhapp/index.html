@@ -35,14 +35,26 @@
                 <div class="row gx-4 gx-lg-5 justify-content-center">
 
                     <div class="col-lg-8 text-center">
-                        <h2 class="text-white mt-0">Parser</h2>
+                        <h2 class="text-white mt-0">Поиск вакансий</h2>
                         <hr class="divider divider-light" />
-                        <p class="text-white-75 mb-4">Python developer, Moscow</p>
-                        <a class="btn btn-light btn-xl" href="#services">Get Started!</a>
+                        <form method="get" action="{% url 'hhapp:index' %}#services">
+                            <div class="input-group mb-4">
+                                <input class="form-control"
+                                       type="search"
+                                       name="q"
+                                       value="{{ search_query }}"
+                                       placeholder="Например: Python developer"
+                                       aria-label="Название вакансии"
+                                       required>
+                                <button class="btn btn-light" type="submit">Найти</button>
+                            </div>
+                        </form>
+                        {% if search_query %}
+                            <a class="btn btn-outline-light" href="{% url 'hhapp:index' %}#services">
+                                Сбросить поиск
+                            </a>
+                        {% endif %}
                         <hr/>
-                        <h1 class="text-white mt-0">Or</h1>
-                        <hr class="divider divider-light" />
-                        <h2></h2>
                         <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy_create' %}">
                             Create vacancy
                         </a>
@@ -56,21 +68,29 @@
         <!-- Services-->
 {% block section_services %}
         <section class="page-section" id="services">
-            Колличество вакансий на странице: {{vacancies|length}}
+            {% if search_query %}
+                <h2 class="text-center mt-0">Результаты для «{{ search_query }}»</h2>
+            {% endif %}
+
+            <h3 class="text-center mt-5">Вакансии в приложении</h3>
+            <p class="text-center text-muted">На странице: {{ vacancies|length }}</p>
             {% for item in vacancies %}
             <div class="container px-4 px-lg-5">
                 <hr class="divider" />
                 <h2 class="text-center mt-0">{{ item.vac_name }}</h2>
-
+                <p class="text-center text-muted">{{ item.employer.employer_name }}</p>
             </div>
             <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' pk=item.pk %}">Vacancy</a>
+            {% empty %}
+                <p class="text-center text-muted">В приложении подходящих вакансий нет.</p>
             {% endfor %}
             <!-- Paginate-->
-            <div class="pagination justify-content-center">
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination justify-content-center mt-4">
                 <span class="step-links">
                     {% if page_obj.has_previous %}
-                        <a href="?page=1">&laquo; first</a>
-                        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page=1">&laquo; first</a>
+                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">previous</a>
                     {% endif %}
 
                     <span class="current">
@@ -78,11 +98,46 @@
                     </span>
 
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}">next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">next</a>
+                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
                     {% endif %}
                 </span>
             </div>
+            {% endif %}
+
+            {% if search_query %}
+                <hr class="my-5"/>
+                <h3 class="text-center">Вакансии HH.ru</h3>
+
+                {% if hh_error %}
+                    <p class="text-center text-danger">{{ hh_error }}</p>
+                {% else %}
+                    {% for item in hh_vacancies %}
+                        <div class="container px-4 px-lg-5">
+                            <hr class="divider" />
+                            <h2 class="text-center mt-0">{{ item.name }}</h2>
+                            <p class="text-center text-muted">{{ item.employer }}</p>
+                            <p class="text-center">
+                                {% if item.salary_from or item.salary_to %}
+                                    {% if item.salary_from %}от {{ item.salary_from }}{% endif %}
+                                    {% if item.salary_to %} до {{ item.salary_to }}{% endif %}
+                                    {{ item.currency }}
+                                {% else %}
+                                    Зарплата не указана
+                                {% endif %}
+                            </p>
+                            <div class="text-center">
+                                <a class="btn btn-primary"
+                                   href="{{ item.url }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">Открыть на HH.ru</a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-center text-muted">На HH.ru подходящих вакансий не найдено.</p>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
 
             <hr/>
             <h1 class="text-center mt-0">Create new vacancy</h1>

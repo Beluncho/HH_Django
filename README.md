@@ -13,6 +13,7 @@
 ### Основной функционал:
 - ✅ **Пользователи и роли** (соискатели, работодатели, администраторы)
 - ✅ **Управление вакансиями** (создание, редактирование, поиск)
+- ✅ **Поиск через HH API** из публичного веб-интерфейса
 - ✅ **Резюме соискателей** с загрузкой фото/документов
 - ✅ **REST API** с пагинацией, фильтрацией и аутентификацией
 - ✅ **Админ-панель** для управления контентом
@@ -78,6 +79,7 @@ HH_Django/
 │   ├── hhapp/               # Основное приложение (вакансии, резюме)
 │   │   ├── models.py
 │   │   ├── views.py
+│   │   ├── services.py      # Клиент HH API
 │   │   ├── management/      # Кастомные команды manage.py
 │   │   ├── migrations/
 │   │   └── templates/hhapp/
@@ -117,35 +119,46 @@ POST	/api/auth/login/	Вход через BasicAuth или SessionAuth
 
 | Режим | Действие | Команда |
 |-------|----------|---------|
-| **DEV** | 🔨 Запуск с пересборкой | `docker-compose up --build` |
-| **DEV** | 🚀 Запуск в фоне | `docker-compose up -d --build` |
-| **DEV** | 🛑 Остановка | `docker-compose down` |
-| **DEV** | 📝 Применить миграции | `docker-compose exec web python manage.py migrate` |
-| **DEV** | 👤 Создать суперпользователя | `docker-compose exec web python manage.py createsuperuser` |
-| **DEV** | 📦 Собрать статику | `docker-compose exec web python manage.py collectstatic --noinput` |
-| **DEV** | 📊 Просмотр логов | `docker-compose logs -f` |
-| **DEV** | 🐚 Войти в контейнер | `docker-compose exec web bash` |
+| **DEV** | 🔨 Запуск с пересборкой | `docker compose up --build` |
+| **DEV** | 🚀 Запуск в фоне | `docker compose up -d --build` |
+| **DEV** | 🛑 Остановка | `docker compose down` |
+| **DEV** | 📝 Применить миграции | `docker compose exec web python manage.py migrate` |
+| **DEV** | 👤 Создать суперпользователя | `docker compose exec web python manage.py createsuperuser` |
+| **DEV** | 📦 Собрать статику | `docker compose exec web python manage.py collectstatic --noinput` |
+| **DEV** | 📊 Просмотр логов | `docker compose logs -f` |
+| **DEV** | 🐚 Войти в контейнер | `docker compose exec web bash` |
 | | | |
-| **PROD** | 🔨 Запуск с пересборкой | `docker-compose -f docker-compose.prod.yml up --build` |
-| **PROD** | 🚀 Запуск в фоне | `docker-compose -f docker-compose.prod.yml up -d --build` |
-| **PROD** | 🛑 Остановка | `docker-compose -f docker-compose.prod.yml down` |
-| **PROD** | 📝 Применить миграции | `docker-compose -f docker-compose.prod.yml exec web python manage.py migrate` |
-| **PROD** | 👤 Создать суперпользователя | `docker-compose -f docker-compose.prod.yml exec web python manage.py createsuperuser` |
-| **PROD** | 📦 Собрать статику | `docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput` |
-| **PROD** | 📊 Просмотр логов | `docker-compose -f docker-compose.prod.yml logs -f` |
-| **PROD** | 🐚 Войти в контейнер | `docker-compose -f docker-compose.prod.yml exec web bash` |
+| **PROD** | 🔨 Запуск с пересборкой | `docker compose -f docker-compose.prod.yml up --build` |
+| **PROD** | 🚀 Запуск в фоне | `docker compose -f docker-compose.prod.yml up -d --build` |
+| **PROD** | 🛑 Остановка | `docker compose -f docker-compose.prod.yml down` |
+| **PROD** | 📝 Применить миграции | `docker compose -f docker-compose.prod.yml exec web python manage.py migrate` |
+| **PROD** | 👤 Создать суперпользователя | `docker compose -f docker-compose.prod.yml exec web python manage.py createsuperuser` |
+| **PROD** | 📦 Собрать статику | `docker compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput` |
+| **PROD** | 📊 Просмотр логов | `docker compose -f docker-compose.prod.yml logs -f` |
+| **PROD** | 🐚 Войти в контейнер | `docker compose -f docker-compose.prod.yml exec web bash` |
 | | | |
-| **ОБЩИЕ** | 🧹 Полная очистка (с удалением БД) | `docker-compose down -v` |
+| **ОБЩИЕ** | 🧹 Полная очистка (с удалением БД) | `docker compose down -v` |
 | **ОБЩИЕ** | 🗑️ Удалить неиспользуемые образы | `docker image prune -a` |
 | **ОБЩИЕ** | ✅ Проверка статуса контейнеров | `docker ps` |
 
 ### 🔧 Переменные окружения для Docker
 
+Рабочие `.env.dev` и `.env.prod` не хранятся в Git. Создайте их из примеров:
+
+```bash
+cp .env.dev.example .env.dev
+cp .env.prod.example .env.prod
+```
+
+Перед production-запуском обязательно замените `SECRET_KEY`,
+`POSTGRES_PASSWORD` и список `ALLOWED_HOSTS`.
+
 **Для разработки (`.env.dev`):**
 ```env
 DEBUG=1
-SECRET_KEY=dev-secret-key-not-for-production
-DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1
+SECRET_KEY=replace-with-a-local-development-secret
+ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+POSTGRES_ENGINE=django.db.backends.postgresql
 POSTGRES_USER=django_user
 POSTGRES_PASSWORD=django_password
 POSTGRES_DB=django_db
@@ -160,17 +173,17 @@ cd HH_Django
 
 # 2. Для разработки
 ```
-docker-compose up -d --build
-docker-compose exec web python manage.py migrate
-docker-compose exec web python manage.py createsuperuser
+cp .env.dev.example .env.dev
+docker compose up -d --build
+docker compose exec web python manage.py createsuperuser
 ```
 # Открыть http://localhost:8000
 
 # 3. Для продакшена
 ```
-docker-compose -f docker-compose.prod.yml up -d --build
-docker-compose -f docker-compose.prod.yml exec web python manage.py migrate
-docker-compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput
+cp .env.prod.example .env.prod
+# Замените секреты и ALLOWED_HOSTS в .env.prod
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 # Открыть http://localhost:1337
 
@@ -180,6 +193,32 @@ curl -H 'Accept: application/json' http://127.0.0.1:8000/api/vacancies/
 ```
 
 ### 🛠️ Управление проектом
+
+#### Поиск вакансий через веб-интерфейс
+
+Поиск на главной странице доступен без авторизации.
+
+- До ввода запроса отображаются все вакансии из локальной базы.
+- После ввода запроса локальные вакансии фильтруются по названию
+  и работодателю.
+- Результаты HH.ru выводятся отдельным списком.
+- Вакансии, найденные через веб-интерфейс, в базу не сохраняются.
+
+#### Парсер с сохранением в базу
+
+Management command сохраняет найденные вакансии и работодателей в локальную
+базу. Перед первым запуском создайте пользователя с именем `parser_bot`
+через админ-панель.
+
+Запуск в Docker:
+
+```bash
+docker compose exec web python manage.py full_db
+```
+
+По умолчанию команда ищет `python developer` в Москве и сохраняет полученные
+результаты. Повторный запуск может добавить дублирующиеся вакансии.
+
 #### Запуск тестов
 ```bash
 python manage.py test

@@ -1,6 +1,7 @@
 from symtable import Class
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Q
 from django.shortcuts import render, get_list_or_404, HttpResponseRedirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
@@ -9,6 +10,7 @@ from django.views.generic.edit import FormMixin
 
 from .models import Vacancies, Employer
 from .forms import ContactForm, VacanciesEmployerForm
+from .services import HHAPIError, search_hh_vacancies
 from django.core.mail import send_mail
 
 
@@ -39,9 +41,33 @@ class VacanciesListView(ListView, ContactView):
     paginate_by = 5
 
 
-    def get_queryset(self):
-        return Vacancies.objects.all().order_by('-id')
+    def get_search_query(self):
+        return self.request.GET.get('q', '').strip()
 
+    def get_queryset(self):
+        queryset = Vacancies.objects.select_related('employer').order_by('-id')
+        search_query = self.get_search_query()
+        if search_query:
+            queryset = queryset.filter(
+                Q(vac_name__icontains=search_query)
+                | Q(employer__employer_name__icontains=search_query)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.get_search_query()
+        context['search_query'] = search_query
+        context['hh_vacancies'] = []
+        context['hh_error'] = ''
+
+        if search_query:
+            try:
+                context['hh_vacancies'] = search_hh_vacancies(search_query)
+            except HHAPIError as error:
+                context['hh_error'] = str(error)
+
+        return context
 
 class RemoveDuplicContextMixin(ContextMixin):
     def get_context_data(self, **kwargs):
@@ -173,6 +199,5 @@ class EmployerDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
 #     # vacancy = Vacancies.objects.get(id=id)
 #     return render(request, 'hhapp/vacancy.html',
 #                   context={'vacancy': vacancy})
-
 
 

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from os import environ
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,11 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY environment variable is required')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(environ.get('DEBUG', default=0))
 
-ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS').split(' ')
+ALLOWED_HOSTS = environ.get('ALLOWED_HOSTS', 'localhost 127.0.0.1').split()
 
 
 # Application definition
@@ -38,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'debug_toolbar',
     'hhapp',
     'userapp',
     'rest_framework',
@@ -55,8 +57,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'HH.urls'
 
@@ -108,7 +113,7 @@ DATABASES = {
         'ENGINE': environ.get('POSTGRES_ENGINE', 'django.db.backends.sqlite3'),
         'NAME': environ.get('POSTGRES_DB', BASE_DIR / 'db.sqlite3'),
         'USER': environ.get('POSTGRES_USER', 'django'),
-        'PASSWORD': environ.get('POSTGRES_PASSWORD', 'nu123456'),
+        'PASSWORD': environ.get('POSTGRES_PASSWORD', ''),
         'HOST': environ.get('POSTGRES_HOST', 'localhost'),
         'PORT': environ.get('POSTGRES_PORT', '5432'),
     }
@@ -147,9 +152,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -193,4 +199,3 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
-

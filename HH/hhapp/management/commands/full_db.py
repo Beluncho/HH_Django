@@ -1,10 +1,7 @@
-import os
-from requests import get
 from django.core.management.base import BaseCommand
 from userapp.models import WebSiteUser
 from hhapp.models import Vacancies, Employer
-from dotenv import load_dotenv
-load_dotenv('.env.dev')
+from hhapp.services import HHAPIError, search_hh_vacancies
 
 
 class Command(BaseCommand):
@@ -13,11 +10,6 @@ class Command(BaseCommand):
 
 
 def hh_parce(vacancy, area):
-    # Загружаем переменные из окружения
-    DOMAIN = os.getenv('HH_API_DOMAIN')
-    ACCESS_TOKEN = os.getenv('HH_ACCESS_TOKEN')
-    USER_AGENT = os.getenv('HH_USER_AGENT')
-
     try:
         parser_user = WebSiteUser.objects.get(username='parser_bot')
         print("✅ Пользователь parser_bot найден")
@@ -28,46 +20,19 @@ def hh_parce(vacancy, area):
         print(f"❌ Ошибка при поиске пользователя: {e}")
         return
 
-    url = f'{DOMAIN}vacancies'
-
-    headers = {
-        'User-Agent': USER_AGENT,
-    }
-
-    # Добавляем авторизацию, если есть токен
-    if ACCESS_TOKEN:
-        headers['Authorization'] = f'Bearer {ACCESS_TOKEN}'
-    else:
-        print("Внимание: HH_ACCESS_TOKEN не задан. Возможны ошибки 403.")
-
-    params = {
-        'text': f'{vacancy} {area}',
-        'page': 0,
-        'per_page': 20
-    }
-
-    response = get(url, headers=headers, params=params)
-    results = response.json()
-
-    print(f"Status code: {response.status_code}")
-
-    if 'items' not in results:
-        print(f"Ошибка API: {results}")
+    try:
+        results = search_hh_vacancies(f'{vacancy} {area}')
+    except HHAPIError as error:
+        print(f"Ошибка API: {error}")
         return []
 
     count = 0
-    for result in results['items']:
-        employer = result['employer']['name']
+    for result in results:
+        employer = result['employer']
         published = result['published_at']
         vacancy_name = result['name']
-        url_vac = result['alternate_url']
-        salary = result['salary']
-
-
-        if salary and salary.get('from'):
-            salary_from = int(salary['from'])
-        else:
-            salary_from = 0
+        url_vac = result['url']
+        salary_from = result['salary_from'] or 0
 
         em, _ = Employer.objects.get_or_create(employer_name=employer)
         Vacancies.objects.create(
@@ -82,7 +47,7 @@ def hh_parce(vacancy, area):
         print(f"✓ Добавлена: {vacancy_name[:50]}...")
 
     print(f"\n✅ Готово! Добавлено {count} вакансий")
-    return results['items']
+    return results
 
 
 if __name__ == '__main__':
