@@ -1,0 +1,123 @@
+{% extends "candidate_trainer/base.html" %}
+
+{% block title %}Собеседование — {{ session.analysis.query }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-row">
+    <a href="{% url 'candidate_trainer:analysis_detail' pk=session.analysis.pk %}">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        К анализу
+    </a>
+</div>
+
+<div class="page-heading interview-heading">
+    <div>
+        <h1>Тестовое собеседование</h1>
+        <p>{{ session.analysis.query }} · {{ session.analysis.area_name }}</p>
+    </div>
+    <div class="interview-state">
+        {% if session.current_skill %}
+        <span class="skill-label">{{ session.current_skill.canonical_name }}</span>
+        {% endif %}
+        <span class="status status-{{ session.status }}">{{ session.get_status_display }}</span>
+    </div>
+</div>
+
+<div class="interview-layout">
+    <section class="dialog-column" aria-label="Диалог собеседования">
+        <div class="dialog-stream">
+            {% for message in interview_messages %}
+            <article class="dialog-message dialog-{{ message.role }}">
+                <div class="message-author">
+                    {% if message.role == "assistant" %}
+                    <i class="bi bi-chat-left-text" aria-hidden="true"></i> Интервьюер
+                    {% else %}
+                    <i class="bi bi-person" aria-hidden="true"></i> Вы
+                    {% endif %}
+                    {% if message.skill %}<span>{{ message.skill.canonical_name }}</span>{% endif %}
+                </div>
+                <div class="message-content">{{ message.content|linebreaks }}</div>
+            </article>
+            {% empty %}
+            <div class="empty-dialog">
+                <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                Первый вопрос пока не сформирован.
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if session.status == "active" %}
+            {% if pending_answer %}
+            <div class="pending-action">
+                <p>Ответ сохранён, но его оценка не завершена.</p>
+                <form method="post" action="{% url 'candidate_trainer:interview_retry' pk=session.pk answer_pk=pending_answer.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                        Повторить обработку
+                    </button>
+                </form>
+            </div>
+            {% elif interview_messages %}
+            <form method="post"
+                  action="{% url 'candidate_trainer:interview_answer' pk=session.pk %}"
+                  class="answer-form">
+                {% csrf_token %}
+                <label class="form-label" for="{{ answer_form.answer.id_for_label }}">{{ answer_form.answer.label }}</label>
+                {{ answer_form.answer }}
+                <div class="answer-actions">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-send" aria-hidden="true"></i>
+                        Отправить ответ
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+            <form method="post"
+                  action="{% url 'candidate_trainer:interview_complete' pk=session.pk %}"
+                  class="complete-form">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger" type="submit">
+                    <i class="bi bi-stop-circle" aria-hidden="true"></i>
+                    Завершить собеседование
+                </button>
+            </form>
+        {% endif %}
+    </section>
+
+    <aside class="insight-column" aria-labelledby="insights-title">
+        <div class="section-heading">
+            <h2 id="insights-title">Разбор ответов</h2>
+            <span class="section-note">{{ insights|length }}</span>
+        </div>
+        {% for insight in insights %}
+        <article class="insight-item">
+            <div class="insight-title">
+                <strong>{{ insight.skill.canonical_name|default:"Общий вопрос" }}</strong>
+                <span>{{ insight.created_at|date:"H:i" }}</span>
+            </div>
+            <div class="score-grid">
+                <div><span>Корректность</span><strong>{{ insight.correctness }}/5</strong></div>
+                <div><span>Глубина</span><strong>{{ insight.depth }}/5</strong></div>
+                <div><span>Практика</span><strong>{{ insight.practical_application }}/5</strong></div>
+            </div>
+            <p>{{ insight.summary }}</p>
+            {% if insight.gaps %}
+            <div class="insight-list">
+                <strong>Пробелы</strong>
+                <ul>{% for gap in insight.gaps %}<li>{{ gap }}</li>{% endfor %}</ul>
+            </div>
+            {% endif %}
+            {% if insight.recommendations %}
+            <div class="insight-list">
+                <strong>Рекомендации</strong>
+                <ul>{% for recommendation in insight.recommendations %}<li>{{ recommendation }}</li>{% endfor %}</ul>
+            </div>
+            {% endif %}
+        </article>
+        {% empty %}
+        <p class="empty-cell">Структурированные выводы появятся после первого ответа.</p>
+        {% endfor %}
+    </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "candidate_trainer/base.html" %}
+
+{% block title %}Анализ вакансий{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Анализ вакансий</h1>
+        <p>Сравнение требований HH.ru по выбранной роли и региону.</p>
+    </div>
+</div>
+
+<section class="trainer-panel" aria-labelledby="new-analysis-title">
+    <div class="section-heading">
+        <h2 id="new-analysis-title">Новый анализ</h2>
+        <span class="section-note">До 20 полных карточек</span>
+    </div>
+    <form method="post" class="analysis-form">
+        {% csrf_token %}
+        <div>
+            <label class="form-label" for="{{ form.query.id_for_label }}">{{ form.query.label }}</label>
+            {{ form.query }}
+            {% for error in form.query.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+        <div>
+            <label class="form-label" for="{{ form.area_id.id_for_label }}">{{ form.area_id.label }}</label>
+            {{ form.area_id }}
+            {% for error in form.area_id.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-primary analysis-submit" type="submit">
+            <i class="bi bi-bar-chart" aria-hidden="true"></i>
+            Анализировать
+        </button>
+    </form>
+</section>
+
+<section class="content-section" aria-labelledby="history-title">
+    <div class="section-heading">
+        <h2 id="history-title">История анализов</h2>
+        <span class="section-note">{{ analyses|length }} последних</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table trainer-table align-middle">
+            <thead>
+                <tr>
+                    <th>Запрос</th>
+                    <th>Регион</th>
+                    <th>Статус</th>
+                    <th>Карточки</th>
+                    <th>Дата</th>
+                    <th><span class="visually-hidden">Открыть</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for analysis in analyses %}
+                <tr>
+                    <td class="fw-semibold">{{ analysis.query }}</td>
+                    <td>{{ analysis.area_name }}</td>
+                    <td><span class="status status-{{ analysis.status }}">{{ analysis.get_status_display }}</span></td>
+                    <td>{{ analysis.vacancies_processed }}</td>
+                    <td>{{ analysis.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary icon-link-button"
+                           href="{% url 'candidate_trainer:analysis_detail' pk=analysis.pk %}"
+                           aria-label="Открыть анализ {{ analysis.query }}"
+                           title="Открыть анализ">
+                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="empty-cell">Анализов пока нет.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% if sessions %}
+<section class="content-section" aria-labelledby="sessions-title">
+    <div class="section-heading">
+        <h2 id="sessions-title">Активные собеседования</h2>
+    </div>
+    <div class="session-list">
+        {% for session in sessions %}
+        <a class="session-row" href="{% url 'candidate_trainer:interview_detail' pk=session.pk %}">
+            <span>
+                <strong>{{ session.analysis.query }}</strong>
+                <small>{{ session.created_at|date:"d.m.Y H:i" }}</small>
+            </span>
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

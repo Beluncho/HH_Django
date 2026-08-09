@@ -1,0 +1,149 @@
+{% extends "candidate_trainer/base.html" %}
+
+{% block title %}{{ analysis.query }} — анализ{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-row">
+    <a href="{% url 'candidate_trainer:dashboard' %}">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Все анализы
+    </a>
+</div>
+
+<div class="page-heading analysis-heading">
+    <div>
+        <h1>{{ analysis.query }}</h1>
+        <p>{{ analysis.area_name }} · создан {{ analysis.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+    <span class="status status-{{ analysis.status }}">{{ analysis.get_status_display }}</span>
+</div>
+
+{% if analysis.error_message %}
+<div class="alert {% if analysis.status == 'failed' %}alert-danger{% else %}alert-warning{% endif %}">
+    {{ analysis.error_message }}
+</div>
+{% endif %}
+
+{% if analysis.status == "failed" %}
+<form method="post" action="{% url 'candidate_trainer:analysis_run' pk=analysis.pk %}" class="mb-4">
+    {% csrf_token %}
+    <button class="btn btn-primary" type="submit">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        Повторить анализ
+    </button>
+</form>
+{% endif %}
+
+<div class="metric-strip" aria-label="Результаты анализа">
+    <div><span>Найдено</span><strong>{{ analysis.vacancies_found }}</strong></div>
+    <div><span>Обработано</span><strong>{{ analysis.vacancies_processed }}</strong></div>
+    <div><span>Навыков</span><strong>{{ analysis_skills|length }}</strong></div>
+</div>
+
+{% if analysis.status == "completed" %}
+<section class="content-section" aria-labelledby="skills-title">
+    <div class="section-heading">
+        <h2 id="skills-title">Требуемые навыки</h2>
+        {% if analysis_skills %}
+        <form method="post" action="{% url 'candidate_trainer:interview_create' pk=analysis.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-dark" type="submit">
+                <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+                Начать собеседование
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table trainer-table align-middle">
+            <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>Навык</th>
+                    <th>Вакансии</th>
+                    <th>Частота</th>
+                    <th>Варианты</th>
+                    <th><span class="visually-hidden">Действие</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in analysis_skills %}
+                <tr>
+                    <td class="rank-cell">{{ item.rank }}</td>
+                    <td class="fw-semibold">{{ item.skill.canonical_name }}</td>
+                    <td>{{ item.vacancy_count }}</td>
+                    <td>{{ item.frequency_percent }}%</td>
+                    <td class="variant-cell">{{ item.variants|join:", " }}</td>
+                    <td class="text-end">
+                        <form method="post" action="{% url 'candidate_trainer:skill_explanation' pk=item.pk %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-primary" type="submit">
+                                <i class="bi bi-book" aria-hidden="true"></i>
+                                Объяснить
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="empty-cell">HH.ru не указал структурированные навыки.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% for item in analysis_skills %}
+    {% if item.latest_explanation %}
+    <section class="explanation-block" id="explanation-{{ item.latest_explanation.pk }}">
+        <div class="section-heading">
+            <h2>{{ item.skill.canonical_name }}</h2>
+            <span class="section-note">{{ item.latest_explanation.created_at|date:"d.m.Y H:i" }}</span>
+        </div>
+        <div class="explanation-text">{{ item.latest_explanation.content|linebreaks }}</div>
+        <details>
+            <summary>Источники контекста</summary>
+            <ul class="source-list">
+                {% for source in item.latest_explanation.sources %}
+                <li>
+                    {% if source.url %}
+                    <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }}</a>
+                    {% else %}
+                    {{ source.title }}
+                    {% endif %}
+                    <span>{{ source.source_type }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </details>
+    </section>
+    {% endif %}
+{% endfor %}
+
+<section class="content-section" aria-labelledby="vacancies-title">
+    <div class="section-heading">
+        <h2 id="vacancies-title">Исходные вакансии</h2>
+        <span class="section-note">{{ analysis.vacancies_processed }} карточек</span>
+    </div>
+    <div class="vacancy-list">
+        {% for vacancy in analysis.vacancies.all %}
+        <article class="vacancy-row">
+            <div>
+                <h3>{{ vacancy.title }}</h3>
+                <p>{{ vacancy.employer|default:"Работодатель не указан" }}</p>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary icon-link-button"
+               href="{{ vacancy.url }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Открыть вакансию {{ vacancy.title }} на HH.ru"
+               title="Открыть на HH.ru">
+                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+            </a>
+        </article>
+        {% empty %}
+        <p class="empty-cell">Карточек нет.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

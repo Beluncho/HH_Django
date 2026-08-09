@@ -1,0 +1,29 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HOME=/home/app \
+    APP_HOME=/home/app/web
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y libpq5 netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/* \
+    && addgroup --system app \
+    && adduser --system --ingroup app app \
+    && mkdir -p "$APP_HOME/staticfiles" "$APP_HOME/media"
+
+WORKDIR $APP_HOME
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir torch==2.6.0 \
+        --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+RUN chmod +x "$APP_HOME/entrypoint.prod.sh" \
+    && chown -R app:app "$HOME"
+
+USER app
+
+ENTRYPOINT ["/home/app/web/entrypoint.prod.sh"]
