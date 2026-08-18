@@ -13,6 +13,7 @@ gunicorn==23.0.0
 idna==3.10
 Markdown==3.7
 mixer==7.2.2
+openai>=1.65.0,<3.0.0
 pillow==11.1.0
 psycopg2-binary==2.9.10
 pycbrf==1.1.0

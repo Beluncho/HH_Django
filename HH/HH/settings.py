@@ -242,7 +242,10 @@ EMBEDDING_CACHE_DIR = environ.get(
 LLM_PROVIDER = environ.get('LLM_PROVIDER', 'disabled')
 LLM_MODEL = environ.get('LLM_MODEL', '')
 LLM_API_KEY = environ.get('LLM_API_KEY', '')
+# Empty means direct OpenAI access. OpenAI-compatible providers use their
+# base /v1 URL. LLM_API_URL remains a backwards-compatible alias.
 LLM_API_URL = environ.get('LLM_API_URL', '')
+LLM_BASE_URL = environ.get('LLM_BASE_URL', '').strip() or LLM_API_URL
 LLM_TIMEOUT = float(environ.get('LLM_TIMEOUT', '30'))
 LLM_MAX_TOKENS = int(environ.get('LLM_MAX_TOKENS', '1200'))
 
