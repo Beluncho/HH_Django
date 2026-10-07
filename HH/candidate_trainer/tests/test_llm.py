@@ -1,153 +1,222 @@
-"""Тесты LLM-клиента: имя параметра лимита ответа и обработка ошибок HTTP.
+from io import StringIO
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
-Реальных запросов к LLM нет — сессия `requests` подменяется двойником.
-"""
-
-from unittest.mock import Mock
-
-import requests
-from django.test import TestCase, override_settings
+from django.core.management import CommandError, call_command
+from django.test import SimpleTestCase, override_settings
 
 from candidate_trainer.services.exceptions import LLMError
 from candidate_trainer.services.llm import (
     DisabledLLMClient,
+    LLMResponse,
     OpenAICompatibleLLMClient,
     get_llm_client,
+    normalize_base_url,
 )
 
 
-def build_client(response):
-    session = Mock()
-    session.post.return_value = response
-    client = OpenAICompatibleLLMClient(
-        provider="OpenAI",
-        model="test-model",
-        api_url="https://llm.test/v1/chat/completions",
-        api_key="secret-key",
-        timeout=5,
-        session=session,
-    )
-    return client, session
+class OpenAICompatibleLLMClientTest(SimpleTestCase):
+    def build_sdk_client(self, content=" Готово "):
+        sdk_client = Mock()
+        sdk_client.chat.completions.create.return_value = SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content=content),
+                )
+            ]
+        )
+        return sdk_client
 
-
-def ok_response(text="Ответ модели."):
-    response = Mock()
-    response.raise_for_status.return_value = None
-    response.json.return_value = {"choices": [{"message": {"content": text}}]}
-    return response
-
-
-class OpenAITokenParameterTest(TestCase):
-    def test_default_parameter_is_max_tokens(self):
-        """Прежнее поведение: без настройки уходит max_tokens."""
-        client, session = build_client(ok_response())
-
-        client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-        payload = session.post.call_args.kwargs["json"]
-        self.assertIn("max_tokens", payload)
-        self.assertNotIn("max_completion_tokens", payload)
-
-    @override_settings(LLM_MAX_TOKENS_PARAM="max_completion_tokens")
-    def test_parameter_name_comes_from_settings(self):
-        """Новые модели OpenAI принимают только max_completion_tokens."""
-        client, session = build_client(ok_response())
-
-        client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-        payload = session.post.call_args.kwargs["json"]
-        self.assertIn("max_completion_tokens", payload)
-        self.assertNotIn("max_tokens", payload)
-
-    def test_explicit_max_tokens_wins_over_setting(self):
-        with override_settings(LLM_MAX_TOKENS=1200):
-            client, session = build_client(ok_response())
-
-            client.complete(
-                "система",
-                [{"role": "user", "content": "вопрос"}],
-                max_tokens=42,
+    def test_proxy_base_url_is_passed_to_openai_sdk(self):
+        with patch(
+            "candidate_trainer.services.llm.OpenAI"
+        ) as openai_client:
+            client = OpenAICompatibleLLMClient(
+                provider="proxyapi",
+                model="anthropic/test-model",
+                api_key="secret",
+                timeout=12,
+                base_url="https://openai.api.proxyapi.ru/v1/",
             )
+            client._get_client()
 
-        payload = session.post.call_args.kwargs["json"]
-        self.assertEqual(payload["max_tokens"], 42)
-
-
-class OpenAITemperatureTest(TestCase):
-    def test_default_sends_temperature(self):
-        """Прежнее поведение: без настройки уходит temperature=0.2."""
-        client, session = build_client(ok_response())
-
-        client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-        payload = session.post.call_args.kwargs["json"]
-        self.assertEqual(payload["temperature"], 0.2)
-
-    @override_settings(LLM_TEMPERATURE=None)
-    def test_empty_setting_omits_temperature(self):
-        """Часть моделей принимает только значение по умолчанию — параметр не шлём."""
-        client, session = build_client(ok_response())
-
-        client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-        payload = session.post.call_args.kwargs["json"]
-        self.assertNotIn("temperature", payload)
-
-    @override_settings(LLM_TEMPERATURE=0.0)
-    def test_zero_temperature_is_sent(self):
-        """Ноль — валидное значение и не должен трактоваться как «не задано»."""
-        client, session = build_client(ok_response())
-
-        client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-        payload = session.post.call_args.kwargs["json"]
-        self.assertEqual(payload["temperature"], 0.0)
-
-
-class OpenAIClientErrorsTest(TestCase):
-    def test_http_error_becomes_llm_error(self):
-        """400 от провайдера не должен утекать наружу как requests-исключение."""
-        response = Mock()
-        response.raise_for_status.side_effect = requests.exceptions.HTTPError("400")
-        client, _ = build_client(response)
-
-        with self.assertRaises(LLMError):
-            client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-    def test_api_key_never_appears_in_error_message(self):
-        response = Mock()
-        response.raise_for_status.side_effect = requests.exceptions.HTTPError("401")
-        client, _ = build_client(response)
-
-        with self.assertRaises(LLMError) as context:
-            client.complete("система", [{"role": "user", "content": "вопрос"}])
-
-        self.assertNotIn("secret-key", str(context.exception))
-
-    def test_incomplete_settings_raise_llm_error(self):
-        client = OpenAICompatibleLLMClient(
-            provider="OpenAI",
-            model="",
-            api_url="https://llm.test/v1/chat/completions",
-            api_key="secret-key",
-            timeout=5,
-            session=Mock(),
+        openai_client.assert_called_once_with(
+            api_key="secret",
+            timeout=12,
+            base_url="https://openai.api.proxyapi.ru/v1",
         )
 
-        with self.assertRaisesMessage(LLMError, "заполнены не полностью"):
-            client.complete("система", [])
+    def test_direct_openai_uses_sdk_default_base_url(self):
+        with patch(
+            "candidate_trainer.services.llm.OpenAI"
+        ) as openai_client:
+            client = OpenAICompatibleLLMClient(
+                provider="openai",
+                model="test-model",
+                api_key="secret",
+                timeout=12,
+            )
+            client._get_client()
 
+        openai_client.assert_called_once_with(
+            api_key="secret",
+            timeout=12,
+        )
 
-class GetLLMClientTest(TestCase):
-    @override_settings(LLM_PROVIDER="disabled")
-    def test_disabled_provider_returns_disabled_client(self):
-        self.assertIsInstance(get_llm_client(), DisabledLLMClient)
+    def test_complete_uses_chat_completions_and_returns_text(self):
+        sdk_client = self.build_sdk_client()
+        client = OpenAICompatibleLLMClient(
+            provider="proxyapi",
+            model="anthropic/test-model",
+            api_key="secret",
+            timeout=12,
+            base_url="https://openai.api.proxyapi.ru/v1",
+            client=sdk_client,
+        )
+
+        response = client.complete(
+            "Системная инструкция",
+            [{"role": "user", "content": "Привет"}],
+            max_tokens=25,
+        )
+
+        self.assertEqual(
+            response,
+            LLMResponse(
+                text="Готово",
+                provider="proxyapi",
+                model="anthropic/test-model",
+            ),
+        )
+        sdk_client.chat.completions.create.assert_called_once_with(
+            model="anthropic/test-model",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Системная инструкция",
+                },
+                {"role": "user", "content": "Привет"},
+            ],
+            max_tokens=25,
+            temperature=0.2,
+        )
+
+    @override_settings(LLM_MAX_TOKENS_PARAM="max_completion_tokens")
+    def test_limit_field_name_is_configurable(self):
+        sdk_client = self.build_sdk_client()
+        client = OpenAICompatibleLLMClient(
+            provider="openai",
+            model="test-model",
+            api_key="secret",
+            timeout=12,
+            client=sdk_client,
+        )
+
+        client.complete("system", [], max_tokens=25)
+
+        _, call_kwargs = sdk_client.chat.completions.create.call_args
+        self.assertEqual(call_kwargs.get("max_completion_tokens"), 25)
+        self.assertNotIn("max_tokens", call_kwargs)
+
+    @override_settings(LLM_MAX_TOKENS_PARAM="max_tokens", LLM_MAX_TOKENS=99)
+    def test_limit_falls_back_to_settings(self):
+        sdk_client = self.build_sdk_client()
+        client = OpenAICompatibleLLMClient(
+            provider="openai",
+            model="test-model",
+            api_key="secret",
+            timeout=12,
+            client=sdk_client,
+        )
+
+        client.complete("system", [])
+
+        _, call_kwargs = sdk_client.chat.completions.create.call_args
+        self.assertEqual(call_kwargs.get("max_tokens"), 99)
+
+    @override_settings(LLM_TEMPERATURE=None)
+    def test_temperature_is_omitted_when_not_configured(self):
+        sdk_client = self.build_sdk_client()
+        client = OpenAICompatibleLLMClient(
+            provider="openai",
+            model="test-model",
+            api_key="secret",
+            timeout=12,
+            client=sdk_client,
+        )
+
+        client.complete("system", [])
+
+        _, call_kwargs = sdk_client.chat.completions.create.call_args
+        self.assertNotIn("temperature", call_kwargs)
+
+    def test_legacy_full_endpoint_is_converted_to_base_url(self):
+        self.assertEqual(
+            normalize_base_url(
+                "https://provider.test/v1/chat/completions/"
+            ),
+            "https://provider.test/v1",
+        )
+
+    def test_empty_response_raises_domain_error(self):
+        client = OpenAICompatibleLLMClient(
+            provider="proxyapi",
+            model="anthropic/test-model",
+            api_key="secret",
+            timeout=12,
+            client=self.build_sdk_client(content=None),
+        )
+
+        with self.assertRaisesMessage(LLMError, "пустой ответ"):
+            client.complete("system", [])
 
     @override_settings(
-        LLM_PROVIDER="OpenAI",
-        LLM_MODEL="test-model",
-        LLM_API_URL="https://llm.test/v1/chat/completions",
-        LLM_API_KEY="secret-key",
+        LLM_PROVIDER="proxyapi",
+        LLM_MODEL="anthropic/test-model",
+        LLM_API_KEY="secret",
+        LLM_TIMEOUT=12,
+        LLM_BASE_URL="https://openai.api.proxyapi.ru/v1",
     )
-    def test_configured_provider_returns_openai_client(self):
-        self.assertIsInstance(get_llm_client(), OpenAICompatibleLLMClient)
+    def test_factory_builds_proxy_client(self):
+        client = get_llm_client()
+
+        self.assertIsInstance(client, OpenAICompatibleLLMClient)
+        self.assertEqual(
+            client.base_url,
+            "https://openai.api.proxyapi.ru/v1",
+        )
+
+    @override_settings(LLM_PROVIDER="disabled")
+    def test_factory_builds_disabled_client(self):
+        self.assertIsInstance(get_llm_client(), DisabledLLMClient)
+
+
+class CheckLLMCommandTest(SimpleTestCase):
+    @patch("candidate_trainer.management.commands.check_llm.get_llm_client")
+    def test_command_checks_connection_without_printing_key(
+        self,
+        get_llm_client_mock,
+    ):
+        llm_client = Mock()
+        llm_client.complete.return_value = LLMResponse(
+            text="OK",
+            provider="proxyapi",
+            model="anthropic/test-model",
+        )
+        get_llm_client_mock.return_value = llm_client
+        stdout = StringIO()
+
+        call_command("check_llm", stdout=stdout)
+
+        self.assertIn("provider=proxyapi", stdout.getvalue())
+        self.assertNotIn("secret", stdout.getvalue())
+        llm_client.complete.assert_called_once()
+
+    @patch("candidate_trainer.management.commands.check_llm.get_llm_client")
+    def test_command_reports_llm_error(self, get_llm_client_mock):
+        llm_client = Mock()
+        llm_client.complete.side_effect = LLMError("Нет подключения")
+        get_llm_client_mock.return_value = llm_client
+
+        with self.assertRaisesMessage(CommandError, "Нет подключения"):
+            call_command("check_llm")

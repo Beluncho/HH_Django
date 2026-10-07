@@ -63,7 +63,8 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 
 Для модуля `candidate_trainer` этого минимума недостаточно: анализу вакансий нужен
 `HH_ACCESS_TOKEN` (при `HH_REQUIRE_ACCESS_TOKEN=1`), а объяснению навыков и
-собеседованию — заполненные `LLM_MODEL`, `LLM_API_URL` и `LLM_API_KEY`. Полный
+собеседованию — заполненные `LLM_MODEL`, адрес провайдера (`LLM_BASE_URL`) и
+`LLM_API_KEY`. Полный
 список переменных и их значения — в
 [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
 

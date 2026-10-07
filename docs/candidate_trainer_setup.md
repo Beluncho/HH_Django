@@ -191,7 +191,7 @@ EMBEDDING_CACHE_DIR=/app/.model-cache
 LLM_PROVIDER=OpenAI
 LLM_MODEL=google/gemini-2.5-flash-lite
 LLM_API_KEY=replace-with-provider-api-key
-LLM_API_URL=https://api.proxyapi.ru/v1/chat/completions
+LLM_BASE_URL=https://api.proxyapi.ru/v1
 LLM_TIMEOUT=30
 LLM_MAX_TOKENS=1600
 LLM_MAX_TOKENS_PARAM=max_tokens
@@ -203,7 +203,7 @@ KNOWLEDGE_IMPORT_MAX_BYTES=2097152
 
 Шаблоны `.env.dev.example`, `.env.prod.example` и `.env.local.example` уже
 поставляются с этим блоком: подставить нужно только `LLM_API_KEY`. Менять
-`LLM_MODEL` и `LLM_API_URL` имеет смысл при смене провайдера.
+`LLM_MODEL` и `LLM_BASE_URL` имеет смысл при смене провайдера.
 
 После изменения `.env.dev` пересоздайте контейнер `web`, чтобы он получил
 новые переменные:
@@ -293,13 +293,22 @@ LLM_PROVIDER=disabled
 
 явно отключает LLM. При нём вопрос собеседования не будет сформирован.
 
-Текущий адаптер ожидает HTTP API, совместимый с OpenAI Chat Completions:
+Текущий адаптер использует официальный SDK `openai` (`openai>=1.65.0` из
+`HH/requirements.txt`) и работает с любым провайдером, совместимым с Chat
+Completions API — как с прямым OpenAI, так и с прокси:
 
-- POST-запрос на адрес из `LLM_API_URL`;
-- Bearer token из `LLM_API_KEY`;
+- клиент создаётся на базовом адресе из `LLM_BASE_URL`, путь
+  `/chat/completions` дописывает SDK;
+- авторизация — ключ из `LLM_API_KEY`;
 - поля `model`, `messages`, имя параметра лимита из `LLM_MAX_TOKENS_PARAM`,
   `temperature` — только если `LLM_TEMPERATURE` не пустая;
-- ответ в `choices[0].message.content`.
+- ответ читается из `choices[0].message.content`.
+
+`LLM_BASE_URL` — база, а не полный endpoint: для прямого OpenAI её можно
+оставить пустой (SDK подставит свой адрес), для прокси указывается адрес вида
+`https://api.proxyapi.ru/v1`. `LLM_API_URL` сохранён как совместимый алиас для
+прежних настроек: если там записан полный адрес с `/chat/completions`, суффикс
+отрезается, и база получается та же.
 
 Имя параметра лимита задаётся настройкой, потому что разные модели принимают
 разные поля: старые OpenAI-совместимые API ждут `max_tokens`, новые
@@ -313,7 +322,7 @@ temperature»: часть моделей принимает только сво�
 LLM_PROVIDER=OpenAI
 LLM_MODEL=google/gemini-2.5-flash-lite
 LLM_API_KEY=provider-secret-key
-LLM_API_URL=https://api.proxyapi.ru/v1/chat/completions
+LLM_BASE_URL=https://api.proxyapi.ru/v1
 LLM_TIMEOUT=30
 LLM_MAX_TOKENS=1600
 LLM_MAX_TOKENS_PARAM=max_tokens
@@ -322,21 +331,28 @@ LLM_TEMPERATURE=0.2
 
 `LLM_PROVIDER` сейчас используется как имя провайдера в сохранённых
 результатах. Любое значение, кроме `disabled`, включает
-OpenAI-compatible клиент. Конкретные `LLM_MODEL` и `LLM_API_URL` нужно
-взять из документации выбранного провайдера. `LLM_API_URL` — полный адрес
-endpoint'а, а не база: клиент отправляет POST ровно по этому URL и ничего
-не дописывает, поэтому база вида `https://host/v1` даст 404.
+OpenAI-compatible клиент. Конкретные `LLM_MODEL` и адрес нужно взять из
+документации выбранного провайдера.
 
-Для локального OpenAI-compatible сервера ключ всё равно должен быть
-непустым, потому что текущий клиент проверяет наличие всех четырёх
-параметров и отправляет `Authorization: Bearer ...`.
+Для локального OpenAI-compatible сервера ключ всё равно должен быть непустым:
+клиент проверяет наличие модели и ключа до обращения к сети, а SDK подставляет
+заголовок `Authorization: Bearer ...`.
+
+Проверить настройки без запуска интерфейса:
+
+```bash
+./run_local.sh check_llm       # или: docker-compose exec web python manage.py check_llm
+```
+
+Команда делает один короткий запрос и печатает провайдера и модель, не выводя
+ключ.
 
 После редактирования `.env.dev`:
 
 ```bash
 docker compose up -d --force-recreate web
 docker compose exec web python manage.py shell -c \
-  "from django.conf import settings; print({'provider': settings.LLM_PROVIDER, 'model': settings.LLM_MODEL, 'url_set': bool(settings.LLM_API_URL), 'key_set': bool(settings.LLM_API_KEY)})"
+  "from django.conf import settings; print({'provider': settings.LLM_PROVIDER, 'model': settings.LLM_MODEL, 'base_url_set': bool(settings.LLM_BASE_URL), 'key_set': bool(settings.LLM_API_KEY)})"
 ```
 
 Команда показывает только наличие настроек и не печатает API-ключ.
@@ -346,7 +362,8 @@ docker compose exec web python manage.py shell -c \
 Для включения нужны все условия:
 
 1. `LLM_PROVIDER` не равен `disabled`.
-2. `LLM_MODEL`, `LLM_API_KEY` и `LLM_API_URL` заполнены.
+2. `LLM_MODEL`, `LLM_API_KEY` и адрес провайдера (`LLM_BASE_URL` или
+   совместимый `LLM_API_URL`) заполнены.
 3. `INTERVIEW_RAG_ENABLED=1`.
 4. Существует глобальная включённая коллекция `interview`.
 5. В коллекции есть хотя бы один документ и его chunks с embeddings.
@@ -512,13 +529,13 @@ docker compose exec web python manage.py import_knowledge \
 ### «LLM не настроен»
 
 Причина: `LLM_PROVIDER=disabled` или не заполнены `LLM_MODEL`,
-`LLM_API_URL`, `LLM_API_KEY`.
+`LLM_API_KEY` и адрес провайдера (`LLM_BASE_URL` либо `LLM_API_URL`).
 
 Проверьте настройки без вывода секрета:
 
 ```bash
 docker compose exec web python manage.py shell -c \
-  "from django.conf import settings; print(settings.LLM_PROVIDER, settings.LLM_MODEL, bool(settings.LLM_API_URL), bool(settings.LLM_API_KEY))"
+  "from django.conf import settings; print(settings.LLM_PROVIDER, settings.LLM_MODEL, bool(settings.LLM_BASE_URL), bool(settings.LLM_API_KEY))"
 ```
 
 ### Первый вопрос не появляется
