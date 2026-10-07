@@ -47,7 +47,13 @@ cp .env.dev.example .env.dev
 SECRET_KEY=your-local-secret
 HH_USER_AGENT=HH_Django/1.0 (your-real-email@example.com)
 HH_ACCESS_TOKEN=your-hh-access-token
+LLM_API_KEY=your-llm-provider-api-key
 ```
+
+`LLM_API_KEY` нужен для объяснения навыков и собеседования: без него проект
+запустится, анализ вакансий будет работать, но на этих действиях появится
+сообщение «LLM не настроен». Если ключа нет, оставьте
+`LLM_PROVIDER=disabled` — остальной функционал останется доступен.
 
 Запустите PostgreSQL и Django:
 
@@ -90,10 +96,67 @@ docker compose down
 Не используйте `docker compose down -v`, если нужно сохранить PostgreSQL и
 кеш embedding-модели: параметр `-v` удаляет именованные volumes.
 
-Если Docker использовать нельзя, нужно заранее экспортировать переменные из
-`.env.dev` в текущий shell и запускать команды из каталога `HH`. Самый
-надёжный вариант для текущего проекта всё равно Docker Compose, потому что
-он одновременно поднимает PostgreSQL и передаёт полный набор настроек.
+Если Docker использовать нельзя, проект запускается напрямую на локальном
+SQLite — PostgreSQL не нужен.
+
+```bash
+cd HH_Django
+python -m venv venv
+venv\Scripts\activate          # Windows; в Linux/macOS: . venv/bin/activate
+pip install "Django==5.1.6" "djangorestframework==3.15.2" requests
+cp .env.local.example .env.local
+./run_local.sh migrate
+./run_local.sh loaddata demo_analysis
+./run_local.sh runserver
+```
+
+Адрес — `http://127.0.0.1:8000/`, тренажёр — `http://127.0.0.1:8000/trainer/`.
+
+Здесь установлен минимальный набор пакетов: только Django, DRF и requests.
+`HH/requirements.txt` целиком тянет `torch` (~2 ГБ), он нужен лишь для
+построения embeddings локальной моделью — см. раздел 5.
+
+В `.env.local` подставьте `SECRET_KEY` и свой `LLM_API_KEY`. Без ключа LLM
+оставьте `LLM_PROVIDER=disabled`: просмотр уже сохранённых результатов
+работает, а новые объяснения и собеседование — нет.
+
+`run_local.sh` — bash-обёртка: активирует `venv`, экспортирует `.env.local`
+в окружение процесса (Django не разбирает `.env` сам) и передаёт аргументы в
+`manage.py`. То же самое вручную:
+
+```bash
+set -a; . ./.env.local; set +a
+cd HH && python manage.py migrate && python manage.py runserver
+```
+
+`/trainer/` требует авторизации. Либо войдите проверочным пользователем
+(см. ниже), либо зарегистрируйтесь на `http://127.0.0.1:8000/user/registration`,
+либо создайте администратора: `./run_local.sh createsuperuser`.
+
+Подробное описание локальных команд — в
+[`HH/candidate_trainer/docs/command_run_analysis_demo.md`](../HH/candidate_trainer/docs/command_run_analysis_demo.md).
+
+### Готовые данные для проверки
+
+`HH/candidate_trainer/fixtures/demo_analysis.json` — обезличенная выгрузка
+одного прогона: 1 анализ, 8 сохранённых карточек вакансий HH.ru, 36 навыков,
+120 фрагментов базы знаний и 2 готовых объяснения навыков.
+
+```bash
+./run_local.sh loaddata demo_analysis
+```
+
+Проверочный пользователь: `demo` / `demo1234`. Пароль публичный, потому что
+это отдельный демонстрационный аккаунт без прав администратора; данные анализа
+принадлежат ему. Реальных учётных данных в выгрузке нет.
+
+Просмотр анализа не требует ни HH API, ни LLM: карточки вакансий сохранены,
+объяснения сгенерированы заранее. Свои ключи нужны только для новых прогонов
+(`run_analysis_demo`) и новых объяснений.
+
+Удалить демо-данные: `./run_local.sh flush --noinput` или удалить
+`HH/db.sqlite3` и повторить `./run_local.sh migrate`.
+
 
 ## 3. Полный пример `.env.dev`
 
@@ -125,16 +188,22 @@ EMBEDDING_DIMENSION=384
 EMBEDDING_DEVICE=cpu
 EMBEDDING_CACHE_DIR=/app/.model-cache
 
-LLM_PROVIDER=openai_compatible
-LLM_MODEL=replace-with-provider-model-id
+LLM_PROVIDER=OpenAI
+LLM_MODEL=google/gemini-2.5-flash-lite
 LLM_API_KEY=replace-with-provider-api-key
-LLM_API_URL=https://provider.example/v1/chat/completions
+LLM_API_URL=https://api.proxyapi.ru/v1/chat/completions
 LLM_TIMEOUT=30
-LLM_MAX_TOKENS=1200
+LLM_MAX_TOKENS=1600
+LLM_MAX_TOKENS_PARAM=max_tokens
+LLM_TEMPERATURE=0.2
 
 INTERVIEW_RAG_ENABLED=1
 KNOWLEDGE_IMPORT_MAX_BYTES=2097152
 ```
+
+Шаблоны `.env.dev.example`, `.env.prod.example` и `.env.local.example` уже
+поставляются с этим блоком: подставить нужно только `LLM_API_KEY`. Менять
+`LLM_MODEL` и `LLM_API_URL` имеет смысл при смене провайдера.
 
 После изменения `.env.dev` пересоздайте контейнер `web`, чтобы он получил
 новые переменные:
@@ -228,24 +297,35 @@ LLM_PROVIDER=disabled
 
 - POST-запрос на адрес из `LLM_API_URL`;
 - Bearer token из `LLM_API_KEY`;
-- поля `model`, `messages`, `max_tokens`, `temperature`;
+- поля `model`, `messages`, имя параметра лимита из `LLM_MAX_TOKENS_PARAM`,
+  `temperature` — только если `LLM_TEMPERATURE` не пустая;
 - ответ в `choices[0].message.content`.
+
+Имя параметра лимита задаётся настройкой, потому что разные модели принимают
+разные поля: старые OpenAI-совместимые API ждут `max_tokens`, новые
+reasoning-модели OpenAI — только `max_completion_tokens` и отвечают HTTP 400
+на любое другое. Пустое `LLM_TEMPERATURE=` означает «не отправлять
+temperature»: часть моделей принимает только своё значение по умолчанию.
 
 Пример конфигурации:
 
 ```env
-LLM_PROVIDER=openai_compatible
-LLM_MODEL=provider-model-id
+LLM_PROVIDER=OpenAI
+LLM_MODEL=google/gemini-2.5-flash-lite
 LLM_API_KEY=provider-secret-key
-LLM_API_URL=https://provider.example/v1/chat/completions
+LLM_API_URL=https://api.proxyapi.ru/v1/chat/completions
 LLM_TIMEOUT=30
-LLM_MAX_TOKENS=1200
+LLM_MAX_TOKENS=1600
+LLM_MAX_TOKENS_PARAM=max_tokens
+LLM_TEMPERATURE=0.2
 ```
 
 `LLM_PROVIDER` сейчас используется как имя провайдера в сохранённых
 результатах. Любое значение, кроме `disabled`, включает
 OpenAI-compatible клиент. Конкретные `LLM_MODEL` и `LLM_API_URL` нужно
-взять из документации выбранного провайдера.
+взять из документации выбранного провайдера. `LLM_API_URL` — полный адрес
+endpoint'а, а не база: клиент отправляет POST ровно по этому URL и ничего
+не дописывает, поэтому база вида `https://host/v1` даст 404.
 
 Для локального OpenAI-compatible сервера ключ всё равно должен быть
 непустым, потому что текущий клиент проверяет наличие всех четырёх

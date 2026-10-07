@@ -124,7 +124,19 @@ celerybeat.pid
 .env.*
 !.env.dev.example
 !.env.prod.example
+!.env.local.example
 LOCAL_SECRETS.md
+
+# Local planning notes (not for VCS)
+HH/candidate_trainer/docs/plan_local_runner.md
+demo_map.md
+
+# Кеш локальных embedding-моделей (создаётся при EMBEDDING_PROVIDER=sentence_transformers)
+HH/.model-cache/
+
+# Настройки PyCharm/IntelliJ
+.idea/
+
 .venv
 env/
 venv/

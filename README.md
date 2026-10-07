@@ -28,8 +28,12 @@
 ```bash
 git clone https://github.com/Beluncho/HH_Django.git
 cd HH_Django
-git checkout nu31-api  Переключитесь на ветку с API
+git checkout AI_Agents_diploma  # ветка с модулем анализа вакансий (candidate_trainer)
 ```
+
+Модуль `candidate_trainer` (анализ требований вакансии, объяснение навыков,
+тестовое собеседование) есть только в ветке `AI_Agents_diploma`. В ветках
+`main` и `nu31-api` его нет.
 ### 2. Создание и активация виртуального окружения
 
 ```bash
@@ -44,16 +48,28 @@ source venv/bin/activate
 ### 3. Установка зависимостей
 
 ```bash
-pip install -r requirements.txt
+pip install -r HH/requirements.txt
 ```
 ### 4. Настройка переменных окружения
 Создайте файл .env в корне проекта:
 
-env
+```env
 SECRET_KEY=ваш-секретный-ключ-сгенерируйте-новый
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+```
+
 ⚠️ Важно: Никогда не коммитьте .env файл в репозиторий! Добавьте его в .gitignore.
+
+Для модуля `candidate_trainer` этого минимума недостаточно: анализу вакансий нужен
+`HH_ACCESS_TOKEN` (при `HH_REQUIRE_ACCESS_TOKEN=1`), а объяснению навыков и
+собеседованию — заполненные `LLM_MODEL`, `LLM_API_URL` и `LLM_API_KEY`. Полный
+список переменных и их значения — в
+[`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
+
+Django не читает файл `.env` сам: настройки берутся из переменных окружения
+процесса. В Docker их передаёт `env_file` из `docker-compose.yml` (файл `.env.dev`),
+при локальном запуске — скрипт `./run_local.sh`, который экспортирует `.env.local`.
 
 ### 5. Применение миграций и создание суперпользователя
 ```bash
@@ -195,6 +211,29 @@ docker compose -f docker-compose.prod.yml up -d --build
 curl -H 'Accept: application/json' http://127.0.0.1:8000/api/vacancies/
 
 ```
+
+### 🧪 Проверка без Docker
+
+Если Docker Compose недоступен, проект запускается напрямую на локальном SQLite:
+
+```bash
+python -m venv venv
+venv\Scripts\activate          # Windows; в Linux/macOS: . venv/bin/activate
+pip install "Django==5.1.6" "djangorestframework==3.15.2" requests
+cp .env.local.example .env.local   # подставить SECRET_KEY и LLM_API_KEY
+./run_local.sh migrate
+./run_local.sh loaddata demo_analysis
+./run_local.sh runserver
+```
+
+Открыть `http://127.0.0.1:8000/trainer/` и войти как `demo` / `demo1234` — в базе
+уже лежит готовый прогон: 8 вакансий HH.ru, 36 навыков и 2 готовых объяснения
+навыков. Ключи HH и LLM для просмотра не нужны, они требуются только для новых
+запросов и новых объяснений.
+
+Разбор команд, параметры и типичные ошибки — в
+[`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md), раздел
+«Запуск без Docker».
 
 ### 🛠️ Управление проектом
 

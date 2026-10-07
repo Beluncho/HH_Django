@@ -47,6 +47,15 @@ class OpenAICompatibleLLMClient:
 
         payload_messages = [{"role": "system", "content": system_prompt}]
         payload_messages.extend(messages)
+        payload = {
+            "model": self.model,
+            "messages": payload_messages,
+            settings.LLM_MAX_TOKENS_PARAM: (
+                max_tokens or settings.LLM_MAX_TOKENS
+            ),
+        }
+        if settings.LLM_TEMPERATURE is not None:
+            payload["temperature"] = settings.LLM_TEMPERATURE
         try:
             response = self.session.post(
                 self.api_url,
@@ -54,12 +63,7 @@ class OpenAICompatibleLLMClient:
                     "Authorization": f"Bearer {self.api_key}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "model": self.model,
-                    "messages": payload_messages,
-                    "max_tokens": max_tokens or settings.LLM_MAX_TOKENS,
-                    "temperature": 0.2,
-                },
+                json=payload,
                 timeout=self.timeout,
             )
             response.raise_for_status()

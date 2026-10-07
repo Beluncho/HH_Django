@@ -245,6 +245,13 @@ LLM_API_KEY = environ.get('LLM_API_KEY', '')
 LLM_API_URL = environ.get('LLM_API_URL', '')
 LLM_TIMEOUT = float(environ.get('LLM_TIMEOUT', '30'))
 LLM_MAX_TOKENS = int(environ.get('LLM_MAX_TOKENS', '1200'))
+# Имя параметра лимита в теле запроса. Прежние OpenAI-совместимые API принимают
+# max_tokens, новые модели OpenAI — только max_completion_tokens.
+LLM_MAX_TOKENS_PARAM = environ.get('LLM_MAX_TOKENS_PARAM', 'max_tokens')
+# Пустая строка означает «не отправлять temperature»: часть моделей принимает
+# только значение по умолчанию и отвечает 400 на любое явное.
+_llm_temperature = environ.get('LLM_TEMPERATURE', '0.2').strip()
+LLM_TEMPERATURE = float(_llm_temperature) if _llm_temperature else None
 
 INTERVIEW_RAG_ENABLED = environ.get(
     'INTERVIEW_RAG_ENABLED',
