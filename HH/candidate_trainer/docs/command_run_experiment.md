@@ -86,7 +86,8 @@ cd HH && python manage.py run_experiment <experiment> [параметры]
 ```
 
 Ответ модели по этому промту длинный: при `LLM_MAX_TOKENS=1600` он обрывается на полуслове
-(в сыром ответе `finish_reason: length`), при 4000 оба варианта укладываются целиком.
+(признак в сыром ответе провайдера — `finish_reason: length`; сам клиент его не печатает,
+поэтому обрыв надёжнее определять по тексту), при 4000 оба варианта укладываются целиком.
 Оба случая сохранены: [`experiment_prompt-explanation-max1600.md`](../../../docs/stage4/experiment_prompt-explanation-max1600.md)
 и [`experiment_prompt-explanation.md`](../../../docs/stage4/experiment_prompt-explanation.md).
 Как подменить лимит на один прогон, не трогая `.env.local` — в
