@@ -86,8 +86,11 @@ cd HH && python manage.py run_experiment <experiment> [параметры]
 ```
 
 Ответ модели по этому промту длинный: при `LLM_MAX_TOKENS=1600` он обрывается на полуслове
-(в сыром ответе `finish_reason: length`). Для сравнения вариантов лимит нужно поднять —
-при 4000 оба варианта укладываются целиком.
+(в сыром ответе `finish_reason: length`), при 4000 оба варианта укладываются целиком.
+Оба случая сохранены: [`experiment_prompt-explanation-max1600.md`](../../../docs/stage4/experiment_prompt-explanation-max1600.md)
+и [`experiment_prompt-explanation.md`](../../../docs/stage4/experiment_prompt-explanation.md).
+Как подменить лимит на один прогон, не трогая `.env.local` — в
+[`docs/stage4_report.md`](../../../docs/stage4_report.md), раздел 3.3.
 
 ### `prompt-evaluation` — варианты промта оценки ответа
 
