@@ -203,7 +203,7 @@ Embeddings: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 | не настроен `HH_ACCESS_TOKEN` | пустой токен при `HH_REQUIRE_ACCESS_TOKEN=1` | заполнить токен в `.env.local` |
 | LLM не настроен | `LLM_PROVIDER=disabled` или пустые `LLM_MODEL`/`LLM_BASE_URL`/`LLM_API_KEY` | заполнить `LLM_*` либо убрать `--explain` |
 | LLM-сервис временно недоступен | адрес провайдера недоступен или указан неверно | проверить `LLM_BASE_URL` (база вида `https://host/v1`, без `/chat/completions`) командой `check_llm` |
-| `LLM вернул пустой ответ` | reasoning-модель израсходовала весь лимит на «размышление» (оно тарифицируется как выход) и вернула пустой текст, в ответе `finish_reason: length` | поднять `LLM_MAX_TOKENS` — для объяснения навыка хватает 1600 — или взять модель без reasoning |
+| `LLM вернул пустой ответ` | reasoning-модель израсходовала весь лимит на «размышление» (оно тарифицируется как выход) и вернула пустой текст, в ответе `finish_reason: length` | поднять `LLM_MAX_TOKENS` — при 1600 объяснение навыка ещё обрывается, в шаблонах стоит 4000 — или взять модель без reasoning |
 | HTTP 400 `Unsupported parameter: 'max_tokens'` | модель принимает только `max_completion_tokens` | `LLM_MAX_TOKENS_PARAM=max_completion_tokens` |
 | HTTP 400 `Unsupported value: 'temperature'` | модель принимает только значение по умолчанию | оставить `LLM_TEMPERATURE=` пустым — параметр не будет отправлен |
 | ответ оборван на полуслове | упёрся в `LLM_MAX_TOKENS` | поднять лимит; признак — `finish_reason: length` в сыром ответе |
@@ -219,7 +219,7 @@ Embeddings: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 
 Все шаблоны (`.env.dev.example`, `.env.prod.example`, `.env.local.example`) поставляются с уже
 заполненным блоком LLM: провайдер, модель `google/gemini-2.5-flash-lite`, базовый адрес
-провайдера (`LLM_BASE_URL`, без `/chat/completions`) и лимит 1600. Подставить нужно только
+провайдера (`LLM_BASE_URL`, без `/chat/completions`) и лимит 4000. Подставить нужно только
 сам ключ `LLM_API_KEY`. Настройки проверяются командой `check_llm`.
 
 Предупреждение: с `--embedding hash` в коллекцию `skill-core` пишутся hash-векторы. Перед

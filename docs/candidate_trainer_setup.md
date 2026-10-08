@@ -193,7 +193,7 @@ LLM_MODEL=google/gemini-2.5-flash-lite
 LLM_API_KEY=replace-with-provider-api-key
 LLM_BASE_URL=https://api.proxyapi.ru/v1
 LLM_TIMEOUT=30
-LLM_MAX_TOKENS=1600
+LLM_MAX_TOKENS=4000
 LLM_MAX_TOKENS_PARAM=max_tokens
 LLM_TEMPERATURE=0.2
 
@@ -324,7 +324,7 @@ LLM_MODEL=google/gemini-2.5-flash-lite
 LLM_API_KEY=provider-secret-key
 LLM_BASE_URL=https://api.proxyapi.ru/v1
 LLM_TIMEOUT=30
-LLM_MAX_TOKENS=1600
+LLM_MAX_TOKENS=4000
 LLM_MAX_TOKENS_PARAM=max_tokens
 LLM_TEMPERATURE=0.2
 ```
