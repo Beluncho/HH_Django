@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анализ требований вакансий с помощью LLM — защита дипломного проекта</title>
+<meta name="description" content="Слайды защиты дипломного проекта: модуль candidate_trainer для Django-платформы поиска работы.">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/white.css">
+<!-- Экспорт в PDF: открыть страницу с ?print-pdf и выбрать «Сохранить как PDF».
+     Отдельный stylesheet для печати не нужен: правила .pdf-page и @media print входят
+     в reveal.css начиная с reveal.js 5. -->
+
+<style>
+  :root {
+    --ink: #1b2430;
+    --muted: #5b6770;
+    --line: #d9dde2;
+    --accent: #c2571a;
+    --accent-soft: #fdf3ec;
+    --ok: #1f7a4d;
+    --bad: #a32b2b;
+  }
+
+  .reveal {
+    font-size: 27px;
+    color: var(--ink);
+    font-family: "Segoe UI", "PT Sans", system-ui, -apple-system, sans-serif;
+  }
+
+  .reveal h1, .reveal h2, .reveal h3 {
+    color: var(--ink);
+    font-weight: 650;
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0 0 0.4em;
+    line-height: 1.15;
+  }
+
+  .reveal h1 { font-size: 1.75em; }
+  .reveal h2 { font-size: 1.25em; }
+  .reveal h3 { font-size: 1.0em; color: var(--muted); font-weight: 600; }
+
+  .reveal .slides > section { text-align: left; padding: 18px 6px; }
+
+  .reveal ul, .reveal ol { margin: 0 0 0 1.1em; }
+  .reveal li { margin: 0.28em 0; line-height: 1.3; }
+  .reveal li::marker { color: var(--accent); }
+  .reveal p { margin: 0.35em 0; line-height: 1.3; }
+
+  .reveal em { color: var(--muted); font-style: normal; }
+  .reveal strong { color: var(--ink); }
+  .accent { color: var(--accent); }
+  .muted { color: var(--muted); }
+  .ok { color: var(--ok); font-weight: 650; }
+  .bad { color: var(--bad); font-weight: 650; }
+
+  /* Числа и код — моноширинно, чтобы столбцы не «плясали» */
+  .num, .reveal code, .reveal pre { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; }
+  .reveal code {
+    background: #f2f4f6;
+    color: #23303d;
+    padding: 0.05em 0.3em;
+    border-radius: 4px;
+    font-size: 0.86em;
+  }
+
+  .reveal pre {
+    width: 100%;
+    box-shadow: none;
+    background: #f7f8f9;
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 0.62em;
+    line-height: 1.35;
+    margin: 0.4em 0;
+  }
+  .reveal pre code { background: none; padding: 0; font-size: 1em; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.63em;
+    margin: 0.5em 0;
+  }
+  th, td {
+    border-bottom: 1px solid var(--line);
+    padding: 5px 9px;
+    text-align: left;
+    line-height: 1.25;
+  }
+  th { color: var(--muted); font-weight: 650; border-bottom: 2px solid var(--line); }
+  td.r, th.r { text-align: right; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  .hl { background: var(--accent-soft) !important; }
+
+  /* Две колонки и «схемы» из блоков */
+  .cols { display: flex; gap: 26px; align-items: flex-start; }
+  .cols > * { flex: 1 1 0; min-width: 0; }
+  .cols-3 > * { flex: 1 1 0; }
+
+  .diagram { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; margin: 0.5em 0; }
+  .diagram .box {
+    flex: 1 1 0;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 9px 11px;
+    font-size: 0.6em;
+    line-height: 1.3;
+    background: #fff;
+  }
+  .diagram .box b { display: block; margin-bottom: 3px; font-size: 1.05em; }
+  .diagram .arrow { align-self: center; color: var(--accent); font-size: 0.9em; flex: 0 0 auto; }
+
+  .flow { display: flex; flex-wrap: wrap; gap: 7px 7px; align-items: center; margin: 0.4em 0; }
+  .flow .step {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-size: 0.6em;
+    background: #fff;
+    line-height: 1.25;
+  }
+  .flow .step b { color: var(--accent); }
+  .flow .arrow { color: var(--accent); font-size: 0.7em; }
+
+  .lead { font-size: 1.02em; }
+  .src { font-size: 0.5em; color: var(--muted); margin-top: 0.6em; border-top: 1px solid var(--line); padding-top: 6px; }
+  .src a, .reveal a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+
+  .keys { font-size: 0.62em; color: var(--muted); }
+  .keys b { color: var(--ink); }
+
+  .title-slide { margin-top: 11vh; }
+  .title-slide h1 { font-size: 1.5em; }
+  .title-slide .sub { font-size: 0.85em; color: var(--muted); margin-bottom: 1.1em; }
+  .title-slide .who { font-size: 0.66em; color: var(--muted); line-height: 1.5; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.5em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 3px 11px;
+    margin-right: 7px;
+    vertical-align: middle;
+  }
+
+  .note-line { font-size: 0.66em; color: var(--muted); margin-top: 0.7em; }
+  .note-line b { color: var(--accent); }
+
+  .footer-links { font-size: 0.58em; line-height: 1.65; }
+</style>
+</head>
+<body>
+<div class="reveal">
+  <div class="slides">
+
+    <!-- 1. Титул -->
+    <section class="title-slide" data-background-color="#fdfcf9">
+      <h1>Анализ требований вакансий<br>с помощью LLM</h1>
+      <p class="sub">Модуль <code>candidate_trainer</code> для Django-платформы поиска работы</p>
+      <p class="who">
+        Дипломный проект · защита · 2026<br>
+        Django 5.1.6 · DRF 3.15 · PostgreSQL · sentence-transformers (CPU) · LLM через OpenAI-совместимый API
+      </p>
+      <p class="keys" style="margin-top:1.4em">
+        Листать: <b>→</b> / <b>пробел</b> · Обзор всех слайдов: <b>Esc</b> ·
+        Заметки докладчика: <b>S</b> · Экспорт в PDF: адрес страницы + <code>?print-pdf</code>
+      </p>
+      <aside class="notes">
+        Здравствуйте. Тема — модуль анализа требований вакансий в существующем Django-проекте
+        поиска работы.<br>
+        План: сначала задача и границы работы, потом как модуль устроен, затем главная часть —
+        исследование с шестью экспериментами, и в конце проверка и итоги.<br>
+        Демонстрация: приложение можно запустить вживую, но всё, что нужно для рассказа, есть
+        на слайдах, поэтому доклад не зависит от сети.
+      </aside>
+    </section>
+
+    <!-- 2. Что уже было -->
+    <section>
+      <h2>Что уже было в проекте</h2>
+      <ul>
+        <li>Платформа <strong>HH_Django</strong>: публичный поиск вакансий через официальный HH.ru API</li>
+        <li>REST API на DRF, админ-панель, шаблонный web-интерфейс</li>
+        <li>PostgreSQL в Docker Compose, production-конфигурация: Gunicorn и Nginx</li>
+        <li>Своя модель пользователя <code>userapp.WebSiteUser</code></li>
+      </ul>
+      <p class="note-line"><b>Чего не было:</b> приложение находило вакансии, но не помогало понять,
+        что в них на самом деле требуется и как подготовиться.</p>
+      <aside class="notes">
+        Это важно проговорить: проект существующий, я дописал к нему новый модуль.<br>
+        Старые приложения <code>hhapp</code> и <code>userapp</code> не переписывались — об этом
+        отдельный слайд про границы работы.
+      </aside>
+    </section>
+
+    <!-- 3. Задача -->
+    <section>
+      <h2>Задача: что должен решать модуль</h2>
+      <p class="lead">20 найденных вакансий — это 20 разных описаний. Соискателю нужно:</p>
+      <table>
+        <thead>
+          <tr><th style="width:33%">Сценарий</th><th>Что даёт</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Анализ требований</strong></td>
+            <td>какие навыки реально требуют и в скольких вакансиях — а не сколько раз слово встретилось в тексте</td>
+          </tr>
+          <tr>
+            <td><strong>Объяснение навыка</strong></td>
+            <td>разбор с опорой на найденные фрагменты источников, с указанием, чего в контексте не хватает</td>
+          </tr>
+          <tr>
+            <td><strong>Тестовое собеседование</strong></td>
+            <td>диалог с вопросами по профилю навыков и разбор ответа по явной рубрике</td>
+          </tr>
+        </tbody>
+      </table>
+      <aside class="notes">
+        Три сценария — это три части одного модуля: анализ, объяснение, интервью.<br>
+        Ключевая мысль для первого сценария: частота навыка считается по числу вакансий.
+        Почему именно так — покажу в эксперименте 1, там разница видна на цифрах.
+      </aside>
+    </section>
+
+    <!-- 4. Границы работы -->
+    <section>
+      <h2>Границы работы</h2>
+      <div class="cols">
+        <div>
+          <h3 class="ok">Делаем</h3>
+          <ul>
+            <li>отдельное приложение <code>candidate_trainer</code></li>
+            <li>интеграцию: маршруты, ссылки авторизации, общие настройки</li>
+            <li>доступ к анализу, интервью и аналитике — только по авторизации</li>
+            <li>хранение HH ID и деталей внешних вакансий</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="bad">Не делаем</h3>
+          <ul>
+            <li>не переписываем <code>hhapp</code> и <code>userapp</code></li>
+            <li>не меняем публичный поиск на главной странице</li>
+            <li>нет тарифов, платежей, подписок и лимитов</li>
+            <li>никакой независимой от Django SQL-схемы — только ORM и миграции</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note-line"><b>Личный вклад:</b> новый код целиком в одном приложении; из старого проекта
+        затронут единственный файл — <code>settings.py</code>, блок настроек «Candidate trainer».</p>
+      <aside class="notes">
+        Это ответ на вопрос «что именно сделали лично вы и что тронуто в старом коде».<br>
+        Правило проекта было — минимальное вмешательство: существующие приложения меняются только
+        там, где нужна интеграция.
+      </aside>
+    </section>
+
+    <!-- 5. Архитектура -->
+    <section>
+      <h2>Архитектура модуля</h2>
+      <div class="diagram">
+        <div class="box">
+          <b>Внешние источники</b>
+          HH.ru API · LLM-провайдер<br>
+          локальная embedding-модель на CPU
+        </div>
+        <div class="arrow">→</div>
+        <div class="box" style="flex:2 1 0">
+          <b>Сервисный слой — 8 модулей</b>
+          <code>hh_client</code> · <code>normalization</code> · <code>analysis</code> ·
+          <code>embeddings</code> · <code>knowledge</code> · <code>prompts</code> ·
+          <code>llm</code> · <code>interview</code>
+        </div>
+        <div class="arrow">→</div>
+        <div class="box">
+          <b>Данные — 11 моделей</b>
+          анализ и снимки вакансий · навыки · база знаний · собеседование и выводы
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Группа моделей</th><th>Сущности</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Анализ</td><td><code>VacancyAnalysis</code>, <code>HHVacancySnapshot</code>, <code>Skill</code>, <code>AnalysisSkill</code></td></tr>
+          <tr><td>База знаний</td><td><code>KnowledgeCollection</code>, <code>KnowledgeDocument</code>, <code>KnowledgeChunk</code></td></tr>
+          <tr><td>Интервью</td><td><code>InterviewSession</code>, <code>InterviewMessage</code>, <code>InterviewInsight</code>, <code>SkillExplanation</code></td></tr>
+        </tbody>
+      </table>
+      <p class="src">Одна миграция <code>0001_initial</code> · связи с пользователем — через <code>settings.AUTH_USER_MODEL</code>, а не через строку с идентификатором</p>
+      <aside class="notes">
+        Главная мысль: нет монолитного класса, который одновременно ходит в HH, считает векторы,
+        лезет в базу, ищет контекст и вызывает модель.<br>
+        Есть фасад-оркестратор и маленькие сервисы: сбой в одном месте не размазывается по всему коду.<br>
+        Агрегированная статистика навыков не привязана к одной вакансии — у анализа отдельная сущность.
+      </aside>
+    </section>
+
+    <!-- 6. Поток анализа -->
+    <section>
+      <h2>Поток анализа вакансии</h2>
+      <div class="flow">
+        <span class="step"><b>1</b> запрос + регион</span><span class="arrow">→</span>
+        <span class="step"><b>2</b> поиск до 20 вакансий</span><span class="arrow">→</span>
+        <span class="step"><b>3</b> полные карточки по HH ID</span><span class="arrow">→</span>
+        <span class="step"><b>4</b> снимок вакансии в базе</span><span class="arrow">→</span>
+        <span class="step"><b>5</b> нормализация навыков</span><span class="arrow">→</span>
+        <span class="step"><b>6</b> частота по вакансиям</span><span class="arrow">→</span>
+        <span class="step"><b>7</b> переиспользуемый анализ</span>
+      </div>
+      <div class="cols">
+        <div>
+          <h3>Что сохраняем</h3>
+          <ul>
+            <li>источник, название, работодатель, URL, дата</li>
+            <li>описание и структурированные <code>key_skills</code></li>
+            <li>канонический навык и варианты его написания</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Что учитываем</h3>
+          <ul>
+            <li>пустой или слишком короткий запрос</li>
+            <li>недоступность HH API и таймаут отдельной карточки</li>
+            <li>отсутствие описания или <code>key_skills</code></li>
+            <li>дубликаты вакансий и повторный анализ того же запроса</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note-line"><b>Регион</b> передаётся в HH API отдельным параметром <code>area</code>,
+        а не подставляется в строку поиска. Повторный анализ того же запроса не идёт в сеть.</p>
+      <aside class="notes">
+        Шаги 2 и 3 — два разных обращения к HH: сначала поиск, потом полная карточка по каждому
+        идентификатору, потому что в выдаче описания урезаны.<br>
+        Проблема одной карточки не роняет весь анализ; если не удалось получить ни одной — анализ
+        завершается понятной ошибкой, а не пустой таблицей.
+      </aside>
+    </section>
+
+    <!-- 7. RAG -->
+    <section>
+      <h2>RAG: три коллекции знаний</h2>
+      <table>
+        <thead>
+          <tr><th style="width:20%">Коллекция</th><th style="width:45%">Что внутри</th><th>Когда нужна</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>skill_core</code></td>
+            <td>фрагменты <code>key_skills</code> и описаний вакансий HH.ru; импорт <code>.txt</code>, <code>.md</code>, <code>.json</code>; проверенные карточки навыков</td>
+            <td>обязательна с первого рабочего этапа</td>
+          </tr>
+          <tr>
+            <td><code>interview</code></td>
+            <td>вопросы, эталонные ответы, рубрики оценки, методические материалы</td>
+            <td>опциональна: пусто или выключено — интервью работает без неё</td>
+          </tr>
+          <tr>
+            <td><code>user_analytics</code></td>
+            <td>структурированный <code>InterviewInsight</code>, а не сырой текст ответа</td>
+            <td>приватна для пользователя, отдельно на каждого</td>
+          </tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>У фрагмента хранится <strong>происхождение</strong>: URL или внешний ID, название документа, дата получения, связанный навык</li>
+        <li>Сгенерированное моделью помечается <code>generated</code> — его нельзя выдать за проверенный источник</li>
+        <li>Поиск — точное косинусное сравнение: при этом объёме данных векторный индекс не нужен</li>
+      </ul>
+      <aside class="notes">
+        Обязательная коллекция — именно поиск по содержательным фрагментам, а не векторный поиск
+        по названиям «Python» и «Django».<br>
+        Если включённая коллекция interview пуста, приложение не падает: интервью идёт по профилю
+        навыков, а отсутствие базы знаний — это штатная ситуация, а не ошибка.<br>
+        Сырые ответы пользователя в общую базу автоматически не попадают.
+      </aside>
+    </section>
+
+    <!-- 8. LLM как компонент -->
+    <section>
+      <h2>Модель как подключаемый компонент</h2>
+      <div class="cols">
+        <div>
+          <h3>Настройки, а не код</h3>
+          <ul>
+            <li><code>LLM_PROVIDER</code>, <code>LLM_MODEL</code>, <code>LLM_BASE_URL</code></li>
+            <li><code>LLM_MAX_TOKENS</code>, <code>LLM_TIMEOUT</code>, <code>LLM_TEMPERATURE</code></li>
+            <li>адаптер поверх OpenAI-совместимого API: смена провайдера — правка окружения</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Что решает не модель</h3>
+          <ul>
+            <li>поиск вакансий и нормализация навыков</li>
+            <li>права доступа и сохранение состояния</li>
+            <li>ограничение контекста: 5 фрагментов вместо всего документа</li>
+          </ul>
+        </div>
+      </div>
+      <p class="note-line"><b>Данные, а не инструкции:</b> вакансии HH, импортированные документы и
+        сообщения пользователя могут содержать указания для модели — это учитывается, текст из
+        внешнего источника не считается доверенной командой.</p>
+      <p class="note-line"><b>Рубрика оценки ответа:</b> корректность · глубина · практическое
+        применение · пробелы · рекомендации. Качество, полученное только от модели, не называется
+        объективным.</p>
+      <aside class="notes">
+        Требование было — не зашивать провайдера и модель в бизнес-логику. Сейчас провайдер
+        настраивается переменными окружения, а в коде только адаптер.<br>
+        Отдельно про оценки: рубрика явная, поэтому видно, за что снижено, но это оценка модели,
+        и на защите я это не выдаю за измеренную истину.
+      </aside>
+    </section>
+
+    <!-- 9. Права доступа -->
+    <section>
+      <h2>Права доступа и приватность</h2>
+      <ul>
+        <li>Весь раздел тренажёра закрыт для гостей: <code>@login_required</code> на каждой точке входа</li>
+        <li>Чужой анализ не отдаётся даже по прямой ссылке — владелец проверяется в сервисе, а не только в интерфейсе</li>
+        <li>Незавершённый анализ не показывается</li>
+        <li>Коммерческих тарифов и лимитов нет — доступ определяется только авторизацией и владением</li>
+        <li>Ключи API не попадают в текст ошибок и не выводятся в логи</li>
+      </ul>
+      <p class="note-line"><b>Пользовательская аналитика приватна.</b> Чтобы перенести материал
+        в общую базу знаний, нужны согласие пользователя, очистка персональных данных и отдельная
+        проверка качества — автоматически этого не происходит.</p>
+      <aside class="notes">
+        Проверка владельца сделана на уровне сервиса, поэтому она работает и для команд, и для
+        представлений, и для API.<br>
+        Отдельным тестами покрыты отказы в доступе — не только успешные сценарии.
+      </aside>
+    </section>
+
+    <!-- 10. Надёжность -->
+    <section>
+      <h2>Надёжность и обработка ошибок</h2>
+      <div class="cols">
+        <div>
+          <h3 class="ok">Обрабатываем</h3>
+          <ul>
+            <li>7 собственных типов ошибок вместо общих исключений</li>
+            <li>сбой одной вакансии не роняет весь анализ</li>
+            <li>причина сбоя сохраняется в базу, а не теряется</li>
+            <li>ошибка модели не портит историю сессии</li>
+            <li>понятное сообщение вместо трассировки: «миграции не применены»</li>
+            <li>ключ доступа не попадает в текст ошибки</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="bad">Не сделано — следующий шаг</h3>
+          <ul>
+            <li>логирование операций</li>
+            <li>страницы 404 и 500</li>
+            <li>очередь задач: для MVP достаточно синхронного запуска с явным статусом анализа</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="notes">
+        Про очередь специально: правила проекта разрешали начать с синхронного сервиса
+        <code>run_analysis(analysis_id)</code> с явным статусом.<br>
+        Точка входа одна, поэтому позже её можно обернуть в Celery, не переписывая логику —
+        это пункт планов на будущее, а не забытый пункт.
+      </aside>
+    </section>
+
+    <!-- 11. Методика исследования -->
+    <section>
+      <h2>Исследование: как получены числа</h2>
+      <ul>
+        <li>Все замеры сделаны <strong>прогонщиком</strong> — management-командой <code>run_experiment</code>, а не ноутбуком</li>
+        <li>Шесть экспериментов: частота навыка · <code>top-k</code> · размер фрагмента · модель векторов · промт объяснения · рубрика оценки</li>
+        <li>Каждый вариант — отдельный раздел с результатом и выводом; блок сохраняется флагом <code>--out</code></li>
+        <li>Базовый прогон: <strong>20 вакансий</strong>, «Python-разработчик», Москва, <strong>57 навыков</strong></li>
+      </ul>
+      <p class="note-line"><b>Почему не ноутбук:</b> прогонщик вызывает те же функции, что работают в
+        интерфейсе, поэтому расхождение между отчётом и приложением невозможно по построению.
+        Ноутбук был бы второй реализацией того же пайплайна, которую нужно поддерживать параллельно.</p>
+      <p class="src">Сырые блоки всех прогонов: <code>docs/stage4/</code> · разбор: <code>docs/stage4_report.md</code></p>
+      <aside class="notes">
+        Это ответ на требование про «финальную версию ноутбука»: вместо него — команда в самом
+        Django-проекте. Её можно запустить и локально, и в контейнере, и в тестах.<br>
+        Эксперименты воспроизводимы без сети: анализ уже сохранён, повторный запуск не идёт в HH.
+      </aside>
+    </section>
+
+    <!-- 12. Эксперимент 1 -->
+    <section>
+      <h2><span class="tag">эксперимент 1</span>Как считать частоту навыка</h2>
+      <p>Два естественных варианта: по числу вакансий и по числу упоминаний в текстах.</p>
+      <table>
+        <thead>
+          <tr><th>Навык</th><th class="r">Вакансий</th><th class="r">Упоминаний</th><th>Что произошло при подсчёте по упоминаниям</th></tr>
+        </thead>
+        <tbody>
+          <tr class="hl"><td>API</td><td class="r">3</td><td class="r">37</td><td>подстрока «api» внутри <em>FastAPI</em> и <em>OpenAPI</em> — счёт раздут в 12 раз</td></tr>
+          <tr><td>Ai</td><td class="r">1</td><td class="r">35</td><td>подстрока «ai» в обычных словах — навык попал в таблицу случайно</td></tr>
+          <tr><td>Apache Kafka</td><td class="r">1</td><td class="r">0</td><td>написание в вакансии отличается от канонического — упоминаний не нашлось</td></tr>
+          <tr><td>SQL</td><td class="r">7</td><td class="r">41</td><td>у SQL и PostgreSQL поровну вакансий (7), но по упоминаниям SQL обгоняет: 41 против 16 — порядок меняется</td></tr>
+        </tbody>
+      </table>
+      <p class="lead"><strong>Итог:</strong> при подсчёте по упоминаниям позицию меняют
+        <span class="bad">56 навыков из 57</span>.</p>
+      <p class="note-line"><b>Вывод:</b> частота считается по числу исходных вакансий, содержащих
+        навык. Разные написания одного навыка собираются в колонку «варианты написания» — без
+        подстрочных совпадений.</p>
+      <p class="src">Источник: <code>docs/stage4_report.md</code>, §6.1 · сырой блок: <code>docs/stage4/experiment_frequency.md</code></p>
+      <aside class="notes">
+        Это и есть исследовательская часть: не «сделали и работает», а сравнили два естественных
+        способа и выбрали по числам.<br>
+        Ключевой пример — API: 3 вакансии, но 37 упоминаний, потому что «api» сидит внутри
+        «FastAPI». По упоминаниям навык выглядел бы одним из главных, а его нет в 17 вакансиях из 20.
+      </aside>
+    </section>
+
+    <!-- 13. Эксперименты 2-3 -->
+    <section>
+      <h2><span class="tag">эксперименты 2–3</span>Параметры поиска по базе знаний</h2>
+      <div class="cols">
+        <div>
+          <h3>Сколько фрагментов отдавать модели</h3>
+          <table>
+            <thead>
+              <tr><th>№</th><th>Фрагмент</th><th class="r">k=3</th><th class="r">k=5</th><th class="r">k=8</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Python-разработчик</td><td class="r">0.5929</td><td class="r">0.5929</td><td class="r">0.5929</td></tr>
+              <tr><td>3</td><td>Python (LLM/AI)</td><td class="r">0.5342</td><td class="r">0.5342</td><td class="r">0.5342</td></tr>
+              <tr class="hl"><td>5</td><td>Senior python (AI-агенты)</td><td class="r">—</td><td class="r">0.5244</td><td class="r">0.5244</td></tr>
+              <tr class="hl"><td>6</td><td>Разработчик python / PgPL</td><td class="r">—</td><td class="r">—</td><td class="r">0.4724</td></tr>
+              <tr><td>8</td><td>Python developer</td><td class="r">—</td><td class="r">—</td><td class="r">0.4399</td></tr>
+            </tbody>
+          </table>
+          <p class="note-line">Между 5-м и 6-м — разрыв <span class="num">0.5244 → 0.4724</span>.
+            Дальше фрагменты того же типа: промт растёт, новых сведений нет.
+            Первые три почти дублируют друг друга, поэтому <code>k=3</code> слишком узок.
+            <br><b>Выбрано: 5</b> (для интервью — 4: контекст уже, диалог сфокусированнее).</p>
+        </div>
+        <div>
+          <h3>Размер фрагмента</h3>
+          <table>
+            <thead>
+              <tr><th class="r">Символов</th><th class="r">Всего</th><th class="r">На вакансию</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="r">600</td><td class="r">107</td><td class="r">5.3</td></tr>
+              <tr class="hl"><td class="r">900</td><td class="r">68</td><td class="r">3.4</td></tr>
+              <tr><td class="r">1200</td><td class="r">52</td><td class="r">2.6</td></tr>
+            </tbody>
+          </table>
+          <p class="note-line">При 600 фрагмент обрывается на середине мысли, при 1200 в один
+            фрагмент попадают требования из разных блоков вакансии.
+            <br><b>Выбрано: 900</b> при перекрытии 120.</p>
+        </div>
+      </div>
+      <p class="src">Источник: <code>docs/stage4_report.md</code>, §6.2–6.3 · сырые блоки: <code>experiment_top-k.md</code>, <code>experiment_chunk-size.md</code></p>
+      <aside class="notes">
+        Оба параметра закреплены в коде: <code>top-k</code> — при объяснении навыка,
+        размер фрагмента — в разбиении текста при наполнении коллекции.<br>
+        Значения подобраны на этом наборе данных; на другом запросе прогонщик позволяет повторить
+        серию за минуту.
+      </aside>
+    </section>
+
+    <!-- 14. Эксперименты 4-6 + лимит -->
+    <section>
+      <h2><span class="tag">эксперименты 4–6</span>Модель векторов, промты, лимит ответа</h2>
+      <table>
+        <thead>
+          <tr><th style="width:22%">Что сравнивали</th><th>Результат</th><th style="width:24%">Выбор</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Модель векторов</td>
+            <td><code>hash</code>: 0.2500 / 0 / 0 / 0 &nbsp;→&nbsp; <strong>MiniLM</strong>: 0.6638 / 0.1761 / 0.1165 / 0.0483<br>
+              <em>три фразы из четырёх получают ровно нулевую близость — поиск не различает смысл</em></td>
+            <td class="ok">MiniLM, 384</td>
+          </tr>
+          <tr>
+            <td>Промт объяснения</td>
+            <td>v1 — 6 635 символов, есть раздел «Ограничения»; v2 — 8 298 символов</td>
+            <td class="ok">v1</td>
+          </tr>
+          <tr>
+            <td>Рубрика оценки</td>
+            <td>оба варианта дали одинаковые баллы 3 / 2 / 3 — промт меняет объяснение, а не оценку</td>
+            <td class="ok">v1 для кандидата</td>
+          </tr>
+          <tr class="hl">
+            <td>Лимит ответа модели</td>
+            <td>1200 и 1600 — ответ обрывается на полуслове; 4000 — укладывается целиком</td>
+            <td class="ok">4000</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note-line"><b>Смена модели векторов требует явной переиндексации:</b> иначе в одной
+        коллекции смешаются векторы разных моделей, и поиск перестанет работать.</p>
+      <p class="src">Источник: <code>docs/stage4_report.md</code>, §6.4–6.7 · обрывы ответа сохранены файлами: <code>docs/stage4/experiment_prompt-explanation-max1600.md</code> и <code>-max1200.md</code></p>
+      <aside class="notes">
+        Про <code>hash</code>: это технический провайдер для тестов и запуска без torch, он не
+        семантическая модель — и на цифрах видно, что он вырождается.<br>
+        Про лимит: эксперимент не планировался, обрыв обнаружился при прогоне промтов, и лимит
+        подбирался по шагам. В шаблонах окружения стояло 1600 — этого не хватало, теперь 4000.
+        Оба случая обрыва сохранены в репозитории, а не только описаны словами.
+      </aside>
+    </section>
+
+    <!-- 15. Сводка -->
+    <section>
+      <h2>Что выбрано по итогам экспериментов</h2>
+      <table>
+        <thead>
+          <tr><th style="width:26%">Параметр</th><th style="width:22%">Выбрано</th><th style="width:26%">Отвергнуто</th><th>Где закреплено</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Частота навыка</td><td class="ok">по числу вакансий</td><td>по числу упоминаний</td><td><code>AnalysisSkill.vacancy_count</code></td></tr>
+          <tr><td><code>top-k</code> для RAG</td><td class="ok">5</td><td>3 — узко, 8 — шум</td><td><code>services/interview.py</code></td></tr>
+          <tr><td>Размер фрагмента</td><td class="ok">900 / перекрытие 120</td><td>600, 1200</td><td><code>services/knowledge.py</code></td></tr>
+          <tr><td>Модель векторов</td><td class="ok">MiniLM, 384</td><td><code>hash</code></td><td><code>EMBEDDING_PROVIDER</code></td></tr>
+          <tr><td>Промт объяснения</td><td class="ok">v1</td><td>v2 — оставлен как режим плана</td><td><code>services/prompts.py</code></td></tr>
+          <tr><td>Рубрика оценки</td><td class="ok">v1</td><td>v2 — журнал обоснований</td><td><code>services/prompts.py</code></td></tr>
+          <tr><td>Лимит ответа модели</td><td class="ok">4000</td><td>1200 и 1600</td><td>шаблоны окружения</td></tr>
+        </tbody>
+      </table>
+      <p class="note-line">Каждый выбор закреплён не в отчёте, а в коде или в настройках —
+        эксперимент закончился изменением проекта.</p>
+      <aside class="notes">
+        Это ответ на вопрос «чем закончилось исследование»: семь параметров, у каждого есть
+        отвергнутый вариант и место, где выбор зафиксирован.<br>
+        Если спросят, где это видно в коде — по очереди называю файлы из последней колонки.
+      </aside>
+    </section>
+
+    <!-- 16. Ограничения -->
+    <section>
+      <h2>Ограничения исследования</h2>
+      <ol>
+        <li>Числа получены на одном наборе: 20 вакансий, «Python-разработчик», Москва. Другой запрос может дать иные значения — серия повторяется прогонщиком.</li>
+        <li>Качество текста модели оценивалось просмотром ответов, а не формальной метрикой. Баллы рубрики — оценка самой модели и не объявляется объективным результатом.</li>
+        <li>Сравнение моделей векторов — микробенчмарк на четырёх фразах: он показывает разницу в качестве, но не заменяет переиндексацию коллекции.</li>
+        <li>Замеры лимита ответа — по одному прогону на значение: модель недетерминирована, воспроизводится факт обрыва, а не точные длины в символах.</li>
+      </ol>
+      <p class="note-line">Это границы выводов, а не дефекты: каждый пункт расширяется тем же
+        прогонщиком на другом запросе или вторым прогоном.</p>
+      <aside class="notes">
+        Проговариваю сам, не дожидаясь вопроса — на защите это выглядит сильнее, чем если
+        ограничения вытащит комиссия.<br>
+        Особенно про пункт 2: я не утверждаю, что вариант промта «объективно лучше» — это выбор по
+        структуре ответа и по полноте раскрытия, а не измеренная метрика.
+      </aside>
+    </section>
+
+    <!-- 17. Тесты -->
+    <section>
+      <h2>Тесты и воспроизводимость</h2>
+      <div class="cols">
+        <div>
+          <h3>65 тестов в 8 файлах</h3>
+          <table>
+            <tbody>
+              <tr><td>анализ вакансий</td><td class="r">9</td></tr>
+              <tr><td>команды прогонщика</td><td class="r">23</td></tr>
+              <tr><td>клиент LLM</td><td class="r">12</td></tr>
+              <tr><td>интервью</td><td class="r">7</td></tr>
+              <tr><td>представления и доступ</td><td class="r">5</td></tr>
+              <tr><td>база знаний, нормализация, клиент HH</td><td class="r">9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>Как проверяется</h3>
+          <pre><code>python manage.py check
+python manage.py test
+python manage.py makemigrations --check --dry-run</code></pre>
+          <ul>
+            <li>в тестах нет реальных запросов к HH.ru, провайдеру LLM и Hugging Face: подставные объекты, фикстуры и тестовый провайдер векторов</li>
+            <li>демо-выгрузка: 8 вакансий, 36 навыков, 120 фрагментов, 2 готовых объяснения — просмотр без ключей и без сети, пользователь <code>demo / demo1234</code></li>
+          </ul>
+        </div>
+      </div>
+      <aside class="notes">
+        Команды можно запустить при мне — они занимают секунды и не требуют ни токена HH, ни
+        ключа модели.<br>
+        Демо-выгрузка обезличена: реальных учётных данных в ней нет, а пароль публичный, потому что
+        это отдельный демонстрационный аккаунт без прав администратора.
+      </aside>
+    </section>
+
+    <!-- 18. Демонстрация -->
+    <section>
+      <h2>Что показываю вживую</h2>
+      <div class="cols">
+        <div>
+          <h3>В терминале</h3>
+          <pre><code>./run_local.sh migrate
+./run_local.sh run_analysis_demo "Python-разработчик" --area 1
+./run_local.sh run_experiment frequency</code></pre>
+          <p class="note-line">Анализ 20 вакансий: таблица навыков с числом вакансий и вариантами
+            написания. Эксперимент: сравнение двух способов подсчёта частоты.</p>
+        </div>
+        <div>
+          <h3>В браузере</h3>
+          <ol>
+            <li>вход и переход в <code>/trainer/</code></li>
+            <li>запрос «Python-разработчик» и регион Москва</li>
+            <li>анализ → таблица навыков</li>
+            <li>«Объяснить навык» → текст с источниками</li>
+            <li>«Начать собеседование» → вопрос, ответ, разбор по рубрике</li>
+          </ol>
+        </div>
+      </div>
+      <p class="note-line"><b>Если сети или токена HH нет:</b> показываю на демо-выгрузке —
+        <code>loaddata demo_analysis</code>, вход <code>demo / demo1234</code>, готовый анализ
+        открывается без ключей и без обращений к HH.</p>
+      <aside class="notes">
+        Порядок такой, чтобы сначала показать результат работы с данными, а потом интерфейс.<br>
+        Если что-то не поднимется на защите, план Б — демо-выгрузка: в ней уже есть сохранённый
+        анализ и два готовых объяснения навыков, поэтому показ не зависит ни от сети, ни от ключей.
+      </aside>
+    </section>
+
+    <!-- 19. Итоги -->
+    <section>
+      <h2>Итоги</h2>
+      <ul>
+        <li><strong>Сделано:</strong> AI-модуль в существующем Django-проекте — анализ 20 вакансий, поиск по базе знаний, объяснение навыков, тестовое собеседование с рубрикой оценки</li>
+        <li><strong>Исследование:</strong> шесть экспериментов и замер лимита ответа; каждый выбор закреплён в коде или настройках</li>
+        <li><strong>Воспроизводимость:</strong> прогонщик вместо ноутбука, 65 тестов без внешних запросов, демо-данные для проверки без ключей</li>
+      </ul>
+      <p class="footer-links" style="margin-top:1em">
+        Проект: <a href="https://github.com/Beluncho/HH_Django/tree/AI_Agents_diploma">github.com/Beluncho/HH_Django</a> (ветка <code>AI_Agents_diploma</code>)<br>
+        Отчёт об экспериментах: <a href="https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md">docs/stage4_report.md</a><br>
+        Инструкция по запуску: <a href="https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/candidate_trainer_setup.md">docs/candidate_trainer_setup.md</a><br>
+        Прогонщик экспериментов: <a href="https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/HH/candidate_trainer/management/commands/run_experiment.py">run_experiment.py</a><br>
+        Карта кода по темам защиты: <a href="https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/demo_map.md">demo_map.md</a>
+      </p>
+      <aside class="notes">
+        Заканчиваю одной фразой: модуль дописан к работающему проекту, спорные места выбраны по
+        результатам экспериментов, а не по вкусу.<br>
+        Дальше — готов к вопросам; ссылки на код и отчёт остаются на слайде, чтобы комиссия могла
+        открыть их сама.
+      </aside>
+    </section>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c / t',
+    center: false,
+    transition: 'none',
+    width: 1280,
+    height: 800,
+    margin: 0.05,
+    plugins: [RevealNotes]
+  });
+</script>
+</body>
+</html>
