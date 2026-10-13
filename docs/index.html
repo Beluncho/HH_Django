@@ -14,18 +14,33 @@
 
 <style>
   :root {
-    --ink: #1b2430;
-    --muted: #5b6770;
-    --line: #d9dde2;
-    --accent: #c2571a;
-    --accent-soft: #fdf3ec;
+    /* Палитра взята с защитной страницы прошлого диплома (ветка Presentation):
+       тёмный сланец и золото. Золото годится только как заливка или на тёмном фоне —
+       на белом его контраст 1.4:1, поэтому для текста отдельный тёмный --accent. */
+    --ink: #0f2027;
+    --text: #22333b;
+    --muted: #4d5c66;
+    --line: #dde3e9;
+    --slate: #203a43;
+    --gold: #ffd700;
+    --gold-line: #dcb500;
+    --accent: #8a6512;
+    --accent-soft: #fcefc2;
+    --bg: #f5f7fa;
+    --card: #ffffff;
     --ok: #1f7a4d;
     --bad: #a32b2b;
+    /* Тему reveal переопределяем в :root: из неё же берётся фон при экспорте в PDF */
+    --r-background-color: var(--bg);
   }
+
+  /* reveal вешает класс .reveal-viewport на body и сам задаёт ему белый фон,
+     поэтому селектор должен быть специфичнее, чем .reveal-viewport из reveal.css */
+  html, body.reveal-viewport { background: var(--bg); }
 
   .reveal {
     font-size: 27px;
-    color: var(--ink);
+    color: var(--text);
     font-family: "Segoe UI", "PT Sans", system-ui, -apple-system, sans-serif;
   }
 
@@ -39,8 +54,32 @@
   }
 
   .reveal h1 { font-size: 1.75em; }
-  .reveal h2 { font-size: 1.25em; }
-  .reveal h3 { font-size: 1.0em; color: var(--muted); font-weight: 600; }
+
+  /* Заголовок слайда: золотая полоса слева, как на странице прошлого диплома,
+     и тонкая линия под ним */
+  .reveal h2 {
+    font-size: 1.22em;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0.55em;
+  }
+  .reveal h2::before {
+    content: '';
+    flex: 0 0 5px;
+    align-self: stretch;
+    min-height: 1.05em;
+    background: var(--gold);
+    border-radius: 3px;
+  }
+
+  .reveal h3 { font-size: 1.0em; color: var(--slate); font-weight: 650; }
+  /* .reveal h3 специфичнее, чем .ok и .bad, поэтому цвета заголовков задаются отдельно */
+  .reveal h3.ok { color: var(--ok); }
+  .reveal h3.bad { color: var(--bad); }
 
   .reveal .slides > section { text-align: left; padding: 18px 6px; }
 
@@ -59,26 +98,27 @@
   /* Числа и код — моноширинно, чтобы столбцы не «плясали» */
   .num, .reveal code, .reveal pre { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; }
   .reveal code {
-    background: #f2f4f6;
-    color: #23303d;
+    background: #eef2f7;
+    color: var(--slate);
     padding: 0.05em 0.3em;
     border-radius: 4px;
     font-size: 0.86em;
   }
 
+  /* Блок команд — тёмный, как блоки команд на странице прошлого диплома */
   .reveal pre {
     width: 100%;
-    box-shadow: none;
-    background: #f7f8f9;
-    border: 1px solid var(--line);
-    border-left: 5px solid var(--accent);
-    border-radius: 6px;
+    background: var(--slate);
+    border: none;
+    border-left: 5px solid var(--gold);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(15, 32, 39, 0.14);
     padding: 14px 18px;
     font-size: 0.62em;
-    line-height: 1.35;
+    line-height: 1.4;
     margin: 0.4em 0;
   }
-  .reveal pre code { background: none; padding: 0; font-size: 1em; }
+  .reveal pre code { background: none; color: #e8eef2; padding: 0; font-size: 1em; }
 
   table {
     width: 100%;
@@ -88,17 +128,36 @@
   }
   th, td {
     border-bottom: 1px solid var(--line);
-    padding: 5px 9px;
+    padding: 6px 10px;
     text-align: left;
     line-height: 1.25;
   }
-  th { color: var(--muted); font-weight: 650; border-bottom: 2px solid var(--line); }
+  th { color: var(--slate); font-weight: 650; border-bottom: 2px solid var(--gold-line); }
   td.r, th.r { text-align: right; }
-  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:nth-child(even) { background: #f7f9fb; }
   .hl { background: var(--accent-soft) !important; }
 
+  /* Карточки: белые, со скруглением и тенью — как секции на странице прошлого диплома.
+     Отдельный класс в разметке не нужен: карточкой становится блок, вокруг которого
+     на слайде есть рамка содержимого — колонка .cols или единственный список .panel. */
+  .cols > div {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(15, 32, 39, 0.07);
+    padding: 14px 18px;
+  }
+
+  /* Слайды, где после заголовка идёт один список: сам список становится карточкой */
+  .panel > ul, .panel > ol {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(15, 32, 39, 0.07);
+    padding: 14px 22px 14px 44px;
+    margin: 0;
+  }
+
   /* Две колонки и «схемы» из блоков */
-  .cols { display: flex; gap: 26px; align-items: flex-start; }
+  .cols { display: flex; gap: 20px; align-items: stretch; }
   .cols > * { flex: 1 1 0; min-width: 0; }
   .cols-3 > * { flex: 1 1 0; }
 
@@ -107,12 +166,13 @@
     flex: 1 1 0;
     min-width: 0;
     border: 1px solid var(--line);
-    border-top: 4px solid var(--accent);
-    border-radius: 6px;
-    padding: 9px 11px;
+    border-top: 4px solid var(--gold);
+    border-radius: 12px;
+    padding: 10px 13px;
     font-size: 0.6em;
     line-height: 1.3;
-    background: #fff;
+    background: var(--card);
+    box-shadow: 0 3px 10px rgba(15, 32, 39, 0.06);
   }
   .diagram .box b { display: block; margin-bottom: 3px; font-size: 1.05em; }
   .diagram .arrow { align-self: center; color: var(--accent); font-size: 0.9em; flex: 0 0 auto; }
@@ -121,41 +181,93 @@
   .flow .step {
     border: 1px solid var(--line);
     border-radius: 999px;
-    padding: 6px 13px;
+    padding: 6px 14px 6px 7px;
     font-size: 0.6em;
-    background: #fff;
+    background: var(--card);
+    box-shadow: 0 2px 6px rgba(15, 32, 39, 0.05);
     line-height: 1.25;
   }
-  .flow .step b { color: var(--accent); }
+  /* Номер шага — золотой кружок */
+  .flow .step b {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.45em;
+    height: 1.45em;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--ink);
+    font-weight: 700;
+    vertical-align: middle;
+  }
   .flow .arrow { color: var(--accent); font-size: 0.7em; }
 
   .lead { font-size: 1.02em; }
-  .src { font-size: 0.5em; color: var(--muted); margin-top: 0.6em; border-top: 1px solid var(--line); padding-top: 6px; }
+  .src {
+    font-size: 0.5em;
+    color: var(--muted);
+    background: #eef2f7;
+    border-radius: 10px;
+    padding: 7px 12px;
+    margin-top: 0.7em;
+  }
   .src a, .reveal a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
 
   .keys { font-size: 0.62em; color: var(--muted); }
   .keys b { color: var(--ink); }
 
-  .title-slide { margin-top: 11vh; }
-  .title-slide h1 { font-size: 1.5em; }
-  .title-slide .sub { font-size: 0.85em; color: var(--muted); margin-bottom: 1.1em; }
-  .title-slide .who { font-size: 0.66em; color: var(--muted); line-height: 1.5; }
+  /* Титульный слайд — тёмный градиент, как шапка страницы прошлого диплома */
+  /* Отступ задаётся padding, а не margin: reveal копирует margin слайда на слой фона
+     (.slide-background), и сверху появлялась светлая полоса над градиентом. */
+  .reveal .slides > section.title-slide { padding: 3.2em 6px 18px; }
+  .title-slide h1 { font-size: 1.5em; color: #fff; }
+  .title-slide h1 .gold { color: var(--gold); }
+  .title-slide .sub { font-size: 0.85em; color: #c3d2d9; margin-bottom: 0.9em; }
+  .title-slide .who { font-size: 0.66em; color: #9fb3bd; line-height: 1.5; }
+  .title-slide code { background: rgba(255, 255, 255, 0.14); color: var(--gold); }
+  .title-slide .keys { color: #9fb3bd; }
+  .title-slide .keys b { color: #fff; }
+
+  /* Стек технологий — чипы-пилюли, как на странице прошлого диплома */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 1.1em 0 0; }
+  .chip {
+    font-size: 0.52em;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--slate);
+    border: 1px solid var(--line);
+  }
+  .title-slide .chip {
+    background: rgba(255, 255, 255, 0.09);
+    color: #e8eef2;
+    border-color: rgba(255, 255, 255, 0.24);
+  }
 
   .tag {
-    display: inline-block;
-    font-size: 0.5em;
-    color: var(--accent);
-    background: var(--accent-soft);
+    flex: 0 0 auto;
+    align-self: center;
+    font-size: 0.46em;
+    color: var(--slate);
+    background: var(--gold);
     border-radius: 999px;
-    padding: 3px 11px;
-    margin-right: 7px;
-    vertical-align: middle;
+    padding: 4px 12px;
+    font-weight: 650;
   }
 
   .note-line { font-size: 0.66em; color: var(--muted); margin-top: 0.7em; }
   .note-line b { color: var(--accent); }
 
   .footer-links { font-size: 0.58em; line-height: 1.65; }
+
+  .reveal .slide-number {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--slate);
+    border-radius: 6px;
+    padding: 2px 9px;
+    font-size: 15px;
+  }
 </style>
 </head>
 <body>
@@ -163,12 +275,19 @@
   <div class="slides">
 
     <!-- 1. Титул -->
-    <section class="title-slide" data-background-color="#fdfcf9">
-      <h1>Анализ требований вакансий<br>с помощью LLM</h1>
+    <section class="title-slide"
+             data-background-color="#0f2027"
+             data-background-gradient="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)">
+      <h1>Анализ требований вакансий<br>с помощью <span class="gold">LLM</span></h1>
       <p class="sub">Модуль <code>candidate_trainer</code> для Django-платформы поиска работы</p>
-      <p class="who">
-        Дипломный проект · защита · 2026<br>
-        Django 5.1.6 · DRF 3.15 · PostgreSQL · sentence-transformers (CPU) · LLM через OpenAI-совместимый API
+      <p class="who">Дипломный проект · защита · 2026</p>
+      <p class="chips">
+        <span class="chip">Python 3.12</span>
+        <span class="chip">Django 5.1.6</span>
+        <span class="chip">DRF 3.15</span>
+        <span class="chip">PostgreSQL</span>
+        <span class="chip">sentence-transformers, CPU</span>
+        <span class="chip">LLM через OpenAI-совместимый API</span>
       </p>
       <p class="keys" style="margin-top:1.4em">
         Листать: <b>→</b> / <b>пробел</b> · Обзор всех слайдов: <b>Esc</b> ·
@@ -185,7 +304,7 @@
     </section>
 
     <!-- 2. Что уже было -->
-    <section>
+    <section class="panel">
       <h2>Что уже было в проекте</h2>
       <ul>
         <li>Платформа <strong>HH_Django</strong>: публичный поиск вакансий через официальный HH.ru API</li>
@@ -421,7 +540,7 @@
     </section>
 
     <!-- 9. Права доступа -->
-    <section>
+    <section class="panel">
       <h2>Права доступа и приватность</h2>
       <ul>
         <li>Весь раздел тренажёра закрыт для гостей: <code>@login_required</code> на каждой точке входа</li>
@@ -473,7 +592,7 @@
     </section>
 
     <!-- 11. Методика исследования -->
-    <section>
+    <section class="panel">
       <h2>Исследование: как получены числа</h2>
       <ul>
         <li>Все замеры сделаны <strong>прогонщиком</strong> — management-командой <code>run_experiment</code>, а не ноутбуком</li>
@@ -640,7 +759,7 @@
     </section>
 
     <!-- 16. Ограничения -->
-    <section>
+    <section class="panel">
       <h2>Ограничения исследования</h2>
       <ol>
         <li>Числа получены на одном наборе: 20 вакансий, «Python-разработчик», Москва. Другой запрос может дать иные значения — серия повторяется прогонщиком.</li>
@@ -728,7 +847,7 @@ python manage.py makemigrations --check --dry-run</code></pre>
     </section>
 
     <!-- 19. Итоги -->
-    <section>
+    <section class="panel">
       <h2>Итоги</h2>
       <ul>
         <li><strong>Сделано:</strong> AI-модуль в существующем Django-проекте — анализ 20 вакансий, поиск по базе знаний, объяснение навыков, тестовое собеседование с рубрикой оценки</li>
@@ -759,7 +878,7 @@ python manage.py makemigrations --check --dry-run</code></pre>
   Reveal.initialize({
     hash: true,
     slideNumber: 'c / t',
-    center: false,
+    center: true,
     transition: 'none',
     width: 1280,
     height: 800,
