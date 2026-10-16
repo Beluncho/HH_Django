@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 370" width="520" height="370" role="img"
+     aria-label="Число фрагментов при разном размере: 600 символов — 107 фрагментов, 900 — 68, 1200 — 52"
+     font-family="Segoe UI, PT Sans, system-ui, -apple-system, sans-serif">
+  <style>
+    .ax  { font-size: 15px; fill: #4d5c66; }
+    .val { font-size: 19px; font-weight: 650; fill: #0f2027; }
+    .sub { font-size: 14px; fill: #4d5c66; }
+    .ttl { font-size: 14px; fill: #4d5c66; }
+    .pick{ font-size: 14px; font-weight: 650; fill: #8a6512; }
+  </style>
+
+  <text class="ttl" x="490" y="20" text-anchor="end">фрагментов в коллекции</text>
+
+  <!-- Сетка -->
+  <g stroke="#e7ecf1" stroke-width="1">
+    <line x1="56" y1="60" x2="490" y2="60"/>
+    <line x1="56" y1="115" x2="490" y2="115"/>
+    <line x1="56" y1="170" x2="490" y2="170"/>
+    <line x1="56" y1="225" x2="490" y2="225"/>
+  </g>
+  <g fill="#94a3ae" font-size="12" text-anchor="end">
+    <text x="50" y="64">100</text>
+    <text x="50" y="119">75</text>
+    <text x="50" y="174">50</text>
+    <text x="50" y="229">25</text>
+  </g>
+
+  <!-- 600 → 107 -->
+  <rect x="90" y="45" width="70" height="235" rx="4" fill="#203a43"/>
+  <text class="val" x="125" y="36" text-anchor="middle">107</text>
+  <text class="ax" x="125" y="302" text-anchor="middle">600</text>
+  <text class="sub" x="125" y="326" text-anchor="middle">5.3 на вакансию</text>
+
+  <!-- 900 → 68 (выбрано) -->
+  <rect x="215" y="130" width="70" height="150" rx="4" fill="#ffd700" stroke="#dcb500" stroke-width="1.5"/>
+  <text class="val" x="250" y="121" text-anchor="middle">68</text>
+  <text class="pick" x="250" y="104" text-anchor="middle">выбрано</text>
+  <text class="ax" x="250" y="302" text-anchor="middle">900</text>
+  <text class="sub" x="250" y="326" text-anchor="middle">3.4 на вакансию</text>
+
+  <!-- 1200 → 52 -->
+  <rect x="340" y="166" width="70" height="114" rx="4" fill="#203a43"/>
+  <text class="val" x="375" y="157" text-anchor="middle">52</text>
+  <text class="ax" x="375" y="302" text-anchor="middle">1200</text>
+  <text class="sub" x="375" y="326" text-anchor="middle">2.6 на вакансию</text>
+
+  <!-- Ось -->
+  <line x1="56" y1="280" x2="490" y2="280" stroke="#94a3ae" stroke-width="1.5"/>
+  <text class="ax" x="460" y="302">символов</text>
+  <text class="sub" x="40" y="356">20 описаний вакансий, перекрытие 120 символов</text>
+</svg>

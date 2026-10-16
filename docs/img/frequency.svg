@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 440" width="1120" height="440" role="img"
+     aria-label="Сравнение подсчёта по вакансиям и по упоминаниям для восьми навыков: у API 3 вакансии и 37 упоминаний, у Ai 1 вакансия и 35 упоминаний"
+     font-family="Segoe UI, PT Sans, system-ui, -apple-system, sans-serif">
+  <style>
+    .lbl { font-size: 16px; fill: #22333b; }
+    .val { font-size: 13px; font-weight: 650; }
+    .ax  { font-size: 13px; fill: #4d5c66; }
+    .leg { font-size: 14px; fill: #22333b; }
+    .ttl { font-size: 15px; font-weight: 650; fill: #0f2027; }
+  </style>
+
+  <!-- Легенда -->
+  <rect x="180" y="10" width="16" height="12" rx="2" fill="#203a43"/>
+  <text class="leg" x="204" y="21">вакансий — так считается в приложении</text>
+  <rect x="520" y="10" width="16" height="12" rx="2" fill="#a32b2b"/>
+  <text class="leg" x="544" y="21">упоминаний — отвергнутый вариант</text>
+
+  <!-- Сетка по упоминаниям -->
+  <g stroke="#e7ecf1" stroke-width="1">
+    <line x1="366.4" y1="44" x2="366.4" y2="408"/>
+    <line x1="552.7" y1="44" x2="552.7" y2="408"/>
+    <line x1="739.1" y1="44" x2="739.1" y2="408"/>
+    <line x1="925.5" y1="44" x2="925.5" y2="408"/>
+  </g>
+  <line x1="180" y1="44" x2="180" y2="408" stroke="#94a3ae" stroke-width="1.5"/>
+
+  <!-- Python: 12 / 44 -->
+  <text class="lbl" x="20" y="86">Python</text>
+  <rect x="180" y="66" width="223.6" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="411" y="77" fill="#203a43">12</text>
+  <rect x="180" y="82" width="820" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="1008" y="93" fill="#a32b2b">44</text>
+
+  <!-- PostgreSQL: 7 / 16 -->
+  <text class="lbl" x="20" y="130">PostgreSQL</text>
+  <rect x="180" y="110" width="130.5" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="318" y="121" fill="#203a43">7</text>
+  <rect x="180" y="126" width="298.2" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="486" y="137" fill="#a32b2b">16</text>
+
+  <!-- SQL: 7 / 41 -->
+  <text class="lbl" x="20" y="174">SQL</text>
+  <rect x="180" y="154" width="130.5" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="318" y="165" fill="#203a43">7</text>
+  <rect x="180" y="170" width="763.7" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="951" y="181" fill="#a32b2b">41</text>
+
+  <!-- Git: 5 / 21 -->
+  <text class="lbl" x="20" y="218">Git</text>
+  <rect x="180" y="198" width="93.2" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="281" y="209" fill="#203a43">5</text>
+  <rect x="180" y="214" width="391.4" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="579" y="225" fill="#a32b2b">21</text>
+
+  <!-- Docker: 4 / 17 -->
+  <text class="lbl" x="20" y="262">Docker</text>
+  <rect x="180" y="242" width="74.5" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="262" y="253" fill="#203a43">4</text>
+  <rect x="180" y="258" width="316.8" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="505" y="269" fill="#a32b2b">17</text>
+
+  <!-- Fastapi: 4 / 11 -->
+  <text class="lbl" x="20" y="306">Fastapi</text>
+  <rect x="180" y="286" width="74.5" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="262" y="297" fill="#203a43">4</text>
+  <rect x="180" y="302" width="205" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="393" y="313" fill="#a32b2b">11</text>
+
+  <!-- API: 3 / 37 -->
+  <text class="lbl" x="20" y="350">API</text>
+  <rect x="180" y="330" width="55.9" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="244" y="341" fill="#203a43">3</text>
+  <rect x="180" y="346" width="689.6" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="877" y="357" fill="#a32b2b">37</text>
+
+  <!-- Ai: 1 / 35 -->
+  <text class="lbl" x="20" y="394">Ai</text>
+  <rect x="180" y="374" width="18.6" height="13" rx="3" fill="#203a43"/>
+  <text class="val" x="207" y="385" fill="#203a43">1</text>
+  <rect x="180" y="390" width="652.3" height="13" rx="3" fill="#a32b2b"/>
+  <text class="val" x="840" y="401" fill="#a32b2b">35</text>
+
+  <!-- Ось -->
+  <line x1="180" y1="412" x2="1000" y2="412" stroke="#94a3ae" stroke-width="1.5"/>
+  <text class="ax" x="356" y="432">10</text>
+  <text class="ax" x="542" y="432">20</text>
+  <text class="ax" x="729" y="432">30</text>
+  <text class="ax" x="915" y="432">40</text>
+  <text class="ax" x="180" y="432">0</text>
+  <text class="ax" x="1020" y="432">число</text>
+</svg>
