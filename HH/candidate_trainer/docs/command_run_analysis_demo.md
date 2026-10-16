@@ -218,9 +218,13 @@ Embeddings: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MAX_TOKENS`, `LLM_MAX_TOKENS_PARAM`, `LLM_TEMPERATURE`.
 
 Все шаблоны (`.env.dev.example`, `.env.prod.example`, `.env.local.example`) поставляются с уже
-заполненным блоком LLM: провайдер, модель `google/gemini-2.5-flash-lite`, базовый адрес
+заполненным блоком LLM: провайдер, модель `google/gemini-3.1-flash-lite`, базовый адрес
 провайдера (`LLM_BASE_URL`, без `/chat/completions`) и лимит 4000. Подставить нужно только
 сам ключ `LLM_API_KEY`. Настройки проверяются командой `check_llm`.
+
+Провайдер может убрать модель из обслуживания — тогда запросы начинают отвечать
+`LLM-сервис вернул HTTP 400`, хотя настройки заполнены верно (в теле ответа провайдер пишет
+`Model not supported`). Имя модели сверяйте со списком моделей провайдера.
 
 Предупреждение: с `--embedding hash` в коллекцию `skill-core` пишутся hash-векторы. Перед
 переходом на реальную модель выполните `reindex_embeddings`, иначе смешаются векторы разных

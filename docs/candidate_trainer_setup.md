@@ -189,7 +189,7 @@ EMBEDDING_DEVICE=cpu
 EMBEDDING_CACHE_DIR=/app/.model-cache
 
 LLM_PROVIDER=OpenAI
-LLM_MODEL=google/gemini-2.5-flash-lite
+LLM_MODEL=google/gemini-3.1-flash-lite
 LLM_API_KEY=replace-with-provider-api-key
 LLM_BASE_URL=https://api.proxyapi.ru/v1
 LLM_TIMEOUT=30
@@ -204,6 +204,14 @@ KNOWLEDGE_IMPORT_MAX_BYTES=2097152
 Шаблоны `.env.dev.example`, `.env.prod.example` и `.env.local.example` уже
 поставляются с этим блоком: подставить нужно только `LLM_API_KEY`. Менять
 `LLM_MODEL` и `LLM_BASE_URL` имеет смысл при смене провайдера.
+
+Имя модели живёт не вечно: провайдер может убрать модель из обслуживания, и
+тогда все запросы начинают отвечать `LLM-сервис вернул HTTP 400`, хотя
+настройки выглядят правильными — в теле ответа провайдер пишет
+`Model not supported`. В шаблонах стоит `google/gemini-3.1-flash-lite` — самый
+дешёвый вариант lite-линейки (76 ₽ за 1M токенов ввода и 455 ₽ за 1M токенов
+вывода у ProxyAPI на момент написания). Актуальный список моделей и цены —
+на сайте провайдера; после правки запустите `check_llm`.
 
 После изменения `.env.dev` пересоздайте контейнер `web`, чтобы он получил
 новые переменные:
@@ -320,7 +328,7 @@ temperature»: часть моделей принимает только сво�
 
 ```env
 LLM_PROVIDER=OpenAI
-LLM_MODEL=google/gemini-2.5-flash-lite
+LLM_MODEL=google/gemini-3.1-flash-lite
 LLM_API_KEY=provider-secret-key
 LLM_BASE_URL=https://api.proxyapi.ru/v1
 LLM_TIMEOUT=30
