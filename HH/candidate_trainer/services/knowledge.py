@@ -1,8 +1,11 @@
 import hashlib
+import json
 import math
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -16,7 +19,24 @@ from candidate_trainer.models import (
 )
 
 from .embeddings import get_embedding_service
-from .exceptions import ReindexRequiredError
+from .exceptions import KnowledgeImportError, ReindexRequiredError
+
+
+IMPORT_SUFFIXES = (".txt", ".md", ".json")
+
+# Глобальные коллекции, которые можно наполнять руками. user_analytics здесь
+# нет намеренно: она создаётся автоматически на пользователя и заполняется
+# выводами собеседования, а не загруженными файлами.
+GLOBAL_COLLECTIONS = {
+    "skill-core": {
+        "title": "База знаний по навыкам",
+        "kind": KnowledgeCollection.Kind.SKILL_CORE,
+    },
+    "interview": {
+        "title": "База знаний для интервью",
+        "kind": KnowledgeCollection.Kind.INTERVIEW,
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -64,6 +84,46 @@ def split_content(content, max_chars=900, overlap=120):
             break
         start = max(end - overlap, start + 1)
     return chunks
+
+
+def prepare_document_content(raw_bytes, filename, max_bytes=None):
+    """Готовит содержимое файла к индексации.
+
+    Общая часть команды ``import_knowledge`` и загрузки из админки: проверка
+    расширения и размера, декодирование UTF-8, разбор JSON. Живёт здесь, а не в
+    команде, чтобы оба пути обрабатывали файл гарантированно одинаково.
+    """
+    max_bytes = (
+        settings.KNOWLEDGE_IMPORT_MAX_BYTES if max_bytes is None else max_bytes
+    )
+    suffix = Path(filename).suffix.casefold()
+    if suffix not in IMPORT_SUFFIXES:
+        raise KnowledgeImportError("Поддерживаются только .txt, .md и .json")
+    if len(raw_bytes) > max_bytes:
+        raise KnowledgeImportError(
+            "Файл превышает допустимый размер "
+            f"({max_bytes // 1024} КБ)"
+        )
+    try:
+        raw_content = raw_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise KnowledgeImportError("Файл должен быть в кодировке UTF-8") from error
+
+    if suffix == ".json":
+        try:
+            payload = json.loads(raw_content)
+        except json.JSONDecodeError as error:
+            raise KnowledgeImportError("JSON-файл содержит ошибку") from error
+        if isinstance(payload, dict) and isinstance(payload.get("content"), str):
+            content = payload["content"]
+        else:
+            content = json.dumps(payload, ensure_ascii=False, indent=2)
+    else:
+        content = raw_content
+
+    if not content.strip():
+        raise KnowledgeImportError("Документ пуст")
+    return content
 
 
 def ensure_collection(

@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Главная</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; <a href="{% url 'admin:candidate_trainer_knowledgecollection_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; Загрузка документа
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>Загрузить документ в базу знаний</h1>
+
+<p class="help">
+    Документ разбивается на фрагменты и векторизуется локальной моделью прямо
+    в этом запросе. Первый запуск скачивает модель (около 470 МБ), дальше
+    каждый фрагмент считается на CPU — для большой методички это может занять
+    минуты. Оригинал файла не сохраняется: в базе остаются фрагменты и имя
+    файла в метаданных.
+</p>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <fieldset class="module aligned">
+        {% for field in form %}
+        <div class="form-row">
+            {{ field.errors }}
+            <div>
+                <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                {{ field }}
+                {% if field.help_text %}<div class="help">{{ field.help_text }}</div>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </fieldset>
+    <div class="submit-row">
+        <input type="submit" value="Загрузить и проиндексировать" class="default">
+    </div>
+</form>
+{% endblock %}

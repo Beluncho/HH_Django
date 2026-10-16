@@ -18,6 +18,16 @@ class ReindexRequiredError(EmbeddingError):
     pass
 
 
+class KnowledgeImportError(CandidateTrainerError):
+    """Файл не удалось подготовить к индексации.
+
+    Причина всегда во входных данных (расширение, размер, кодировка, пустой
+    документ), поэтому сообщение можно показывать человеку как есть.
+    """
+
+    pass
+
+
 class LLMError(CandidateTrainerError):
     """Ошибка обращения к LLM.
 
