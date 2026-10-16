@@ -13,6 +13,7 @@ from candidate_trainer.models import (
     InterviewSession,
     KnowledgeCollection,
     KnowledgeDocument,
+    LLMRequestLog,
     SkillExplanation,
     VacancyAnalysis,
 )
@@ -31,6 +32,7 @@ from .knowledge import (
     index_imported_document,
 )
 from .llm import get_llm_client
+from .llm_log import record_llm_call
 from .prompts import (
     evaluation_prompt,
     explanation_prompt,
@@ -73,7 +75,15 @@ def explain_skill(
         analysis_skill,
         contexts,
     )
-    response = llm_client.complete(system_prompt, prompt_messages)
+    with record_llm_call(
+        LLMRequestLog.Operation.EXPLANATION,
+        user=user,
+        provider=llm_client.provider,
+        model=llm_client.model,
+    ) as call:
+        response = call.remember(
+            llm_client.complete(system_prompt, prompt_messages)
+        )
     return SkillExplanation.objects.create(
         user=user,
         analysis_skill=analysis_skill,
@@ -143,10 +153,16 @@ def ensure_initial_question(
         skills,
         contexts,
     )
-    response = (llm_client or get_llm_client()).complete(
-        system_prompt,
-        prompt_messages,
-    )
+    llm_client = llm_client or get_llm_client()
+    with record_llm_call(
+        LLMRequestLog.Operation.INITIAL_QUESTION,
+        user=user,
+        provider=llm_client.provider,
+        model=llm_client.model,
+    ) as call:
+        response = call.remember(
+            llm_client.complete(system_prompt, prompt_messages)
+        )
     with transaction.atomic():
         locked = InterviewSession.objects.select_for_update().get(pk=session.pk)
         existing = locked.messages.order_by("sequence").first()
@@ -327,12 +343,18 @@ def submit_interview_answer(
         answer.skill,
         contexts,
     )
+    llm_client = llm_client or get_llm_client()
     try:
-        response = (llm_client or get_llm_client()).complete(
-            system_prompt,
-            prompt_messages,
-        )
-        evaluation = _parse_evaluation(response.text)
+        with record_llm_call(
+            LLMRequestLog.Operation.ANSWER_EVALUATION,
+            user=user,
+            provider=llm_client.provider,
+            model=llm_client.model,
+        ) as call:
+            response = call.remember(
+                llm_client.complete(system_prompt, prompt_messages)
+            )
+            evaluation = _parse_evaluation(response.text)
     except CandidateTrainerError as error:
         _mark_answer_error(answer, error)
         raise

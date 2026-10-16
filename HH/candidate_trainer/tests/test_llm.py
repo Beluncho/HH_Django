@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 from django.core.management import CommandError, call_command
 from django.test import SimpleTestCase, override_settings
+from openai import APIStatusError
 
 from candidate_trainer.services.exceptions import LLMError
 from candidate_trainer.services.llm import (
@@ -157,6 +158,32 @@ class OpenAICompatibleLLMClientTest(SimpleTestCase):
             ),
             "https://provider.test/v1",
         )
+
+    def test_status_error_keeps_provider_body(self):
+        sdk_client = Mock()
+        sdk_client.chat.completions.create.side_effect = APIStatusError(
+            "Bad request",
+            response=Mock(
+                status_code=400,
+                text='{"detail": "Model not supported"}',
+                headers={},
+            ),
+            body={"detail": "Model not supported"},
+        )
+        client = OpenAICompatibleLLMClient(
+            provider="proxyapi",
+            model="retired-model",
+            api_key="secret",
+            timeout=12,
+            client=sdk_client,
+        )
+
+        with self.assertRaises(LLMError) as context:
+            client.complete("system", [])
+
+        # Без тела ответа провайдера сообщение «HTTP 400» недиагностируемо.
+        self.assertEqual(context.exception.http_status, 400)
+        self.assertIn("Model not supported", context.exception.provider_detail)
 
     def test_empty_response_raises_domain_error(self):
         client = OpenAICompatibleLLMClient(

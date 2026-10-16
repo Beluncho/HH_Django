@@ -24,6 +24,7 @@ from .services import (
 )
 from .services.exceptions import CandidateTrainerError
 from .services.interview import complete_interview, ensure_initial_question
+from .services.llm import humanize_llm_error
 
 
 @login_required
@@ -42,7 +43,7 @@ def dashboard(request):
                     run_analysis(analysis.pk)
                     messages.success(request, "Анализ вакансий завершён.")
                 except CandidateTrainerError as error:
-                    messages.error(request, str(error))
+                    messages.error(request, humanize_llm_error(error))
             elif not created:
                 messages.info(
                     request,
@@ -119,7 +120,7 @@ def rerun_analysis(request, pk):
             run_analysis(analysis.pk, force=True)
             messages.success(request, "Анализ вакансий завершён.")
         except CandidateTrainerError as error:
-            messages.error(request, str(error))
+            messages.error(request, humanize_llm_error(error))
     return redirect("candidate_trainer:analysis_detail", pk=analysis.pk)
 
 
@@ -139,7 +140,7 @@ def skill_explanation(request, pk):
         )
         fragment = f"#explanation-{explanation.pk}"
     except CandidateTrainerError as error:
-        messages.error(request, str(error))
+        messages.error(request, humanize_llm_error(error))
         fragment = ""
     detail_url = reverse(
         "candidate_trainer:analysis_detail",
@@ -155,7 +156,7 @@ def interview_create(request, pk):
     try:
         session = start_interview(analysis=analysis, user=request.user)
     except CandidateTrainerError as error:
-        messages.error(request, str(error))
+        messages.error(request, humanize_llm_error(error))
         return redirect("candidate_trainer:analysis_detail", pk=analysis.pk)
     return redirect("candidate_trainer:interview_detail", pk=session.pk)
 
@@ -177,7 +178,7 @@ def interview_detail(request, pk):
         try:
             ensure_initial_question(session, user=request.user)
         except CandidateTrainerError as error:
-            messages.error(request, str(error))
+            messages.error(request, humanize_llm_error(error))
 
     interview_messages = list(
         session.messages.select_related("skill").order_by("sequence")
@@ -219,7 +220,7 @@ def interview_answer(request, pk):
             )
             messages.success(request, "Ответ сохранён и разобран.")
         except CandidateTrainerError as error:
-            messages.error(request, str(error))
+            messages.error(request, humanize_llm_error(error))
     else:
         messages.error(request, "Проверьте текст ответа.")
     return redirect("candidate_trainer:interview_detail", pk=session.pk)
@@ -243,7 +244,7 @@ def interview_retry(request, pk, answer_pk):
         )
         messages.success(request, "Ответ обработан.")
     except CandidateTrainerError as error:
-        messages.error(request, str(error))
+        messages.error(request, humanize_llm_error(error))
     return redirect("candidate_trainer:interview_detail", pk=session.pk)
 
 
@@ -255,5 +256,5 @@ def interview_complete(request, pk):
         complete_interview(session, user=request.user)
         messages.success(request, "Собеседование завершено.")
     except CandidateTrainerError as error:
-        messages.error(request, str(error))
+        messages.error(request, humanize_llm_error(error))
     return redirect("candidate_trainer:interview_detail", pk=session.pk)

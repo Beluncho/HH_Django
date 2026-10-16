@@ -385,3 +385,53 @@ class InterviewInsight(models.Model):
 
     def __str__(self):
         return f"Вывод по ответу #{self.answer_id}"
+
+
+class LLMRequestLog(models.Model):
+    """Журнал обращений к LLM.
+
+    Пишется на каждый вызов модели — и удачный, и неудачный. Нужен потому, что
+    сообщение вида «LLM-сервис вернул HTTP 400» без тела ответа провайдера
+    недиагностируемо: настоящая причина («Model not supported», «Unsupported
+    parameter: max_tokens») приходит именно в теле.
+
+    Текстов промтов и ответов модели здесь нет: правила проекта запрещают
+    логировать пользовательские ответы и сформированные промты.
+    """
+
+    class Status(models.TextChoices):
+        OK = "ok", "Успешно"
+        ERROR = "error", "Ошибка"
+
+    class Operation(models.TextChoices):
+        EXPLANATION = "explanation", "Объяснение навыка"
+        INITIAL_QUESTION = "initial_question", "Первый вопрос собеседования"
+        ANSWER_EVALUATION = "answer_evaluation", "Оценка ответа"
+        CHECK = "check", "Проверка настроек"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="llm_request_logs",
+        null=True,
+        blank=True,
+    )
+    operation = models.CharField(max_length=40, choices=Operation.choices)
+    status = models.CharField(max_length=20, choices=Status.choices)
+    provider = models.CharField(max_length=50, blank=True)
+    model = models.CharField(max_length=200, blank=True)
+    duration_ms = models.PositiveIntegerField(default=0)
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    error_detail = models.CharField(max_length=500, blank=True)
+    prompt_tokens = models.PositiveIntegerField(null=True, blank=True)
+    completion_tokens = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=("status", "-created_at")),
+        ]
+
+    def __str__(self):
+        return f"{self.get_operation_display()} — {self.get_status_display()}"

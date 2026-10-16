@@ -9,6 +9,7 @@ from .models import (
     KnowledgeChunk,
     KnowledgeCollection,
     KnowledgeDocument,
+    LLMRequestLog,
     Skill,
     SkillExplanation,
     VacancyAnalysis,
@@ -54,3 +55,42 @@ admin.site.register(SkillExplanation)
 admin.site.register(InterviewSession)
 admin.site.register(InterviewMessage)
 admin.site.register(InterviewInsight)
+
+
+@admin.register(LLMRequestLog)
+class LLMRequestLogAdmin(admin.ModelAdmin):
+    """Журнал обращений к LLM — только для чтения.
+
+    Это следы работы системы, а не данные: записи создаёт код, а руками их
+    править нечего. Текстов промтов и ответов здесь нет (см. модель).
+    """
+
+    list_display = (
+        "created_at",
+        "operation",
+        "status",
+        "provider",
+        "model",
+        "duration_ms",
+        "http_status",
+        "user",
+    )
+    list_filter = ("status", "operation", "provider")
+    search_fields = ("error_detail", "model", "user__username")
+    date_hierarchy = "created_at"
+    readonly_fields = (
+        "created_at",
+        "operation",
+        "status",
+        "provider",
+        "model",
+        "duration_ms",
+        "http_status",
+        "error_detail",
+        "prompt_tokens",
+        "completion_tokens",
+        "user",
+    )
+
+    def has_add_permission(self, request):
+        return False

@@ -17,6 +17,64 @@ class LLMResponse:
     text: str
     provider: str
     model: str
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+
+
+PROVIDER_DETAIL_LIMIT = 500
+
+
+def provider_error_detail(error):
+    """Тело ответа провайдера, обрезанное до разумного размера.
+
+    Именно в теле лежит причина HTTP-ошибки: «Model not supported»,
+    «Unsupported parameter: max_tokens». Без него диагностика превращается в
+    угадывание.
+    """
+    text = ""
+    response = getattr(error, "response", None)
+    if response is not None:
+        text = getattr(response, "text", "") or ""
+    if not text:
+        body = getattr(error, "body", None)
+        if body is not None:
+            text = str(body)
+    return " ".join(text.split())[:PROVIDER_DETAIL_LIMIT]
+
+
+def humanize_llm_error(error):
+    """Короткая фраза для пользователя вместо технической.
+
+    Полный ответ провайдера остаётся в журнале обращений к LLM
+    (services/llm_log.py), а в интерфейс уходит то, что человек может
+    исправить.
+    """
+    if not isinstance(error, LLMError):
+        return str(error)
+
+    detail = (error.provider_detail or "").lower()
+    if "model not supported" in detail or "model_not_found" in detail:
+        return (
+            "Провайдер не обслуживает модель из LLM_MODEL. Сверьте имя модели "
+            "со списком моделей провайдера."
+        )
+    if "max_tokens" in detail or "max_completion_tokens" in detail:
+        return (
+            "Модель не принимает выбранное поле лимита ответа. Приведите "
+            "LLM_MAX_TOKENS_PARAM в соответствие требованиям провайдера."
+        )
+    if "temperature" in detail:
+        return (
+            "Модель не принимает temperature. Оставьте LLM_TEMPERATURE пустым — "
+            "тогда параметр не отправляется."
+        )
+    if error.http_status in (401, 403):
+        return "Провайдер отклонил ключ LLM_API_KEY."
+    if error.http_status == 429:
+        return "Провайдер ограничил частоту запросов. Повторите позже."
+    if error.provider_detail:
+        return f"{error}. Подробности — в журнале обращений к LLM."
+    return str(error)
 
 
 class DisabledLLMClient:
@@ -92,13 +150,16 @@ class OpenAICompatibleLLMClient:
         try:
             response = self._get_client().chat.completions.create(**create_kwargs)
             text = response.choices[0].message.content
+            usage = getattr(response, "usage", None)
         except APITimeoutError as error:
             raise LLMError("Превышен таймаут обращения к LLM") from error
         except APIConnectionError as error:
             raise LLMError("Не удалось подключиться к LLM-сервису") from error
         except APIStatusError as error:
             raise LLMError(
-                f"LLM-сервис вернул HTTP {error.status_code}"
+                f"LLM-сервис вернул HTTP {error.status_code}",
+                http_status=error.status_code,
+                provider_detail=provider_error_detail(error),
             ) from error
         except OpenAIError as error:
             raise LLMError("LLM-сервис временно недоступен") from error
@@ -111,6 +172,8 @@ class OpenAICompatibleLLMClient:
             text=text.strip(),
             provider=self.provider,
             model=self.model,
+            prompt_tokens=getattr(usage, "prompt_tokens", None),
+            completion_tokens=getattr(usage, "completion_tokens", None),
         )
 
 
