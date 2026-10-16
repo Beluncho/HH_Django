@@ -10,6 +10,8 @@
     <link href="{% static 'candidate_trainer/css/trainer.css' %}" rel="stylesheet">
 </head>
 <body>
+    <div class="progress-strip" id="progress-strip" role="presentation" hidden></div>
+
     <header class="trainer-header">
         <nav class="container trainer-nav" aria-label="Основная навигация">
             <a class="trainer-brand" href="{% url 'candidate_trainer:dashboard' %}">
@@ -43,5 +45,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="{% static 'candidate_trainer/js/trainer.js' %}"></script>
 </body>
 </html>

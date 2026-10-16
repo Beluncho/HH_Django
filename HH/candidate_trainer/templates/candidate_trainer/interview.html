@@ -52,7 +52,7 @@
                 <p>Ответ сохранён, но его оценка не завершена.</p>
                 <form method="post" action="{% url 'candidate_trainer:interview_retry' pk=session.pk answer_pk=pending_answer.pk %}">
                     {% csrf_token %}
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-primary" type="submit" data-busy="Повторяю разбор…">
                         <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
                         Повторить обработку
                     </button>
@@ -66,7 +66,7 @@
                 <label class="form-label" for="{{ answer_form.answer.id_for_label }}">{{ answer_form.answer.label }}</label>
                 {{ answer_form.answer }}
                 <div class="answer-actions">
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-primary" type="submit" data-busy="Разбираю ответ…">
                         <i class="bi bi-send" aria-hidden="true"></i>
                         Отправить ответ
                     </button>

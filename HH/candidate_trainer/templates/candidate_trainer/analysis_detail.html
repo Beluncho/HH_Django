@@ -27,7 +27,7 @@
 {% if analysis.status == "failed" %}
 <form method="post" action="{% url 'candidate_trainer:analysis_run' pk=analysis.pk %}" class="mb-4">
     {% csrf_token %}
-    <button class="btn btn-primary" type="submit">
+    <button class="btn btn-primary" type="submit" data-busy="Повторяю анализ…">
         <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
         Повторить анализ
     </button>
@@ -47,7 +47,7 @@
         {% if analysis_skills %}
         <form method="post" action="{% url 'candidate_trainer:interview_create' pk=analysis.pk %}">
             {% csrf_token %}
-            <button class="btn btn-dark" type="submit">
+            <button class="btn btn-dark" type="submit" data-busy="Готовлю первый вопрос…">
                 <i class="bi bi-chat-square-text" aria-hidden="true"></i>
                 Начать собеседование
             </button>
@@ -77,7 +77,8 @@
                     <td class="text-end">
                         <form method="post" action="{% url 'candidate_trainer:skill_explanation' pk=item.pk %}">
                             {% csrf_token %}
-                            <button class="btn btn-sm btn-outline-primary" type="submit">
+                            <button class="btn btn-sm btn-outline-primary" type="submit"
+                                    data-busy="Объясняю…">
                                 <i class="bi bi-book" aria-hidden="true"></i>
                                 Объяснить
                             </button>
