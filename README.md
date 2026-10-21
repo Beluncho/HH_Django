@@ -1,327 +1,256 @@
-
-
-# HH Django Project - Job Search Platform
+# Candidate Trainer — AI-модуль HH Django
 
 [![Django Version](https://img.shields.io/badge/Django-5.1.6-green)](https://www.djangoproject.com/)
 [![DRF Version](https://img.shields.io/badge/DRF-3.15.2-blue)](https://www.django-rest-framework.org/)
-[![Python Version](https://img.shields.io/badge/Python-3.8+-yellow)](https://www.python.org/)
+[![Python Version](https://img.shields.io/badge/Python-3.12+-yellow)](https://www.python.org/)
 
-## 📖 О проекте
+Второй диплом: модуль анализа вакансий и подготовки к собеседованию для
+платформы поиска работы [HH Django](https://github.com/Beluncho/HH_Django).
+Платформа умела искать вакансии, но не объясняла, что именно требуется
+кандидату. Модуль закрывает три сценария:
 
-Веб-платформа для поиска работы и сотрудников (аналог HeadHunter), построенная на Django и Django REST Framework. Проект включает как классические шаблонные страницы, так и REST API.
+1. **Анализ требований** — по запросу и региону собрать вакансии HH.ru,
+   нормализовать навыки и посчитать, что действительно требуют.
+2. **Объяснение навыка** — показать, зачем навык нужен в вакансиях и что
+   стоит подтянуть, с опорой на базу знаний (RAG).
+3. **Тестовое собеседование** — задавать вопросы по навыкам из анализа,
+   оценивать ответы и сохранять разбор.
 
-### Основной функционал:
-- ✅ **Пользователи и роли** (соискатели, работодатели, администраторы)
-- ✅ **Управление вакансиями** (создание, редактирование, поиск)
-- ✅ **Поиск через HH API** из публичного веб-интерфейса
-- ✅ **Резюме соискателей** с загрузкой фото/документов
-- ✅ **REST API** с пагинацией, фильтрацией и аутентификацией
-- ✅ **Админ-панель** для управления контентом
-- ✅ **Отправка email-уведомлений** (консольный backend для разработки)
-- ✅ **Валюты** (интеграция с ЦБ РФ через pycbrf)
-- ✅ **DBF-файлы** (импорт данных из старых форматов)
+> Платформа, REST API и деплой — первый диплом, ветка `main`.
+> Модуль `candidate_trainer` живёт в ветке `AI_Agents_diploma`.
+> Презентация защиты: **https://beluncho.github.io/HH_Django/**
 
-## 🚀 Быстрый старт
+## Что было и что добавилось
 
-### 1. Клонирование репозитория
+| | Первый диплом (`main`) | Второй диплом (`AI_Agents_diploma`) |
+|---|---|---|
+| Задача | найти вакансии и работодателей | объяснить требования и подготовить кандидата |
+| Данные | вакансии, работодатели, профили | снимки вакансий, нормализованные навыки, база знаний, сессии собеседований |
+| Логика | CRUD, поиск, HH API, DRF | анализ, embeddings, RAG, LLM, оценка ответов |
+| Наблюдаемость | логи Django | журнал обращений к LLM с телом ответа провайдера |
+| Тесты | тесты приложений | 90 тестов в 10 файлах, без внешних запросов |
+| Инфраструктура | PostgreSQL, Docker, Nginx, Gunicorn | те же контейнеры + PostgreSQL-хранилище векторов |
+
+## Возможности модуля
+
+- поиск до 20 вакансий HH.ru по запросу и региону, с кэшем повторных анализов;
+- нормализация навыков: «Python 3», «питон» и «Python» сводятся к одному навыку;
+- частота считается **по вакансиям**, а не по упоминаниям;
+- объяснение навыка с цитатами из базы знаний и ссылками на источники;
+- тестовое собеседование: первый вопрос, ответ кандидата, разбор по трём шкалам
+  (корректность, глубина, практика), рекомендации;
+- RAG на трёх коллекциях, локальные embeddings и cosine similarity;
+- LLM как подключаемый провайдер: любой OpenAI-совместимый API или `disabled`;
+- загрузка методичек в базу знаний из админки и командой;
+- журнал всех обращений к модели: статус, HTTP-код, тело ошибки, время, токены —
+  без текстов промтов и ответов;
+- права доступа: чужой анализ не отдаётся даже по прямой ссылке.
+
+## Устройство
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ Django: hhapp (вакансии) + userapp (пользователи)          │
+│                                                            │
+│  candidate_trainer                                         │
+│   views / templates ── dashboard, analysis, interview      │
+│        │                                                   │
+│        ├── services/analysis.py   HH API → нормализация →  │
+│        │                          навыки → снимки вакансий │
+│        ├── services/knowledge.py  коллекции, чанки,        │
+│        │                          embeddings, retrieval    │
+│        ├── services/interview.py  объяснение, вопросы,     │
+│        │                          оценка ответов           │
+│        ├── services/llm.py        OpenAI-совместимый клиент│
+│        └── services/llm_log.py    журнал обращений         │
+│                                                            │
+│  PostgreSQL: 12 моделей, векторы — JSON + cosine в коде    │
+└────────────────────────────────────────────────────────────┘
+```
+
+Модуль не монолитный: 12 моделей и 10 сервисных модулей, каждый отвечает за
+свой шаг. Внешние вызовы (HH API и LLM) изолированы в клиентах, поэтому тесты
+работают без сети.
+
+### Модели
+
+| Группа | Модели |
+|---|---|
+| Анализ | `VacancyAnalysis`, `HHVacancySnapshot`, `Skill`, `AnalysisSkill` |
+| База знаний | `KnowledgeCollection`, `KnowledgeDocument`, `KnowledgeChunk` |
+| Объяснения | `SkillExplanation` |
+| Собеседование | `InterviewSession`, `InterviewMessage`, `InterviewInsight` |
+| Наблюдаемость | `LLMRequestLog` |
+
+### Поток анализа вакансии
+
+1. Проверка запроса и региона, расчёт `cache_key`.
+2. Повторный запрос того же пользователя возвращает готовый анализ.
+3. Запрос к HH API (не больше 20 вакансий).
+4. Очистка HTML и извлечение навыков из описаний.
+5. Нормализация и слияние вариантов названий.
+6. Подсчёт частоты по вакансиям и ранжирование.
+7. Сохранение снимков вакансий и индексация фрагментов в `skill-core`.
+
+## RAG
+
+| Коллекция | Кто наполняет | Зачем |
+|---|---|---|
+| `skill-core` | вакансии и загруженные методички | объяснение навыков; обязательна |
+| `interview` | методички по собеседованию | дополнительные вопросы; опциональна |
+| `user_analytics` | выводы собеседований | приватная история пользователя |
+
+- Текст режется на фрагменты по 900 символов с перекрытием 120.
+- Векторы строит локальная модель `paraphrase-multilingual-MiniLM-L12-v2` (384).
+- Векторы хранятся в PostgreSQL как JSON, релевантность считается точным
+  cosine similarity — отдельный векторный сервер для этого объёма не нужен.
+- `INTERVIEW_RAG_ENABLED=1` только разрешает поиск. Коллекция `interview`
+  должна быть наполнена отдельно.
+
+## LLM как подключаемый компонент
+
+Провайдер задаётся настройками, а не кодом:
+
+```dotenv
+LLM_PROVIDER=OpenAI          # любое имя, кроме disabled
+LLM_MODEL=...
+LLM_BASE_URL=https://api.proxyapi.ru/v1
+LLM_API_KEY=...
+LLM_MAX_TOKENS=4000
+LLM_MAX_TOKENS_PARAM=max_tokens
+LLM_TEMPERATURE=0.2
+```
+
+- `LLM_PROVIDER=disabled` оставляет анализ вакансий рабочим, а генерацию
+  объяснений и собеседование отключает с понятным сообщением.
+- Имя модели нужно сверять с провайдером: убранная модель отвечает
+  `HTTP 400 Model not supported`.
+- Ответы модели не считаются инструкциями: текст вакансий и документов
+  передаётся как данные, а не как команды.
+
+## Исследование: шесть экспериментов
+
+Прогон на 20 вакансиях и 57 нормализованных навыках, скрипт-прогонщик
+`run_experiment` вместо ноутбука. Сырые блоки — в [`docs/stage4/`](docs/stage4/),
+отчёт — [`docs/stage4_report.md`](docs/stage4_report.md).
+
+| Эксперимент | Что проверяли | Выбор |
+|---|---|---|
+| Частота навыка | вакансии или упоминания | по вакансиям: по упоминаниям позицию меняют 56 навыков из 57 |
+| top-k | сколько фрагментов отдавать модели | 5 |
+| Размер фрагмента | 600 / 900 / 1200 символов | 900, перекрытие 120 |
+| Embeddings | hash или MiniLM | MiniLM |
+| Промт объяснения | две формулировки | v1 |
+| Рубрика оценки | две формулировки | v1 для кандидата, v2 как журнал обоснований |
+| Лимит ответа | 1200 / 1600 / 4000 токенов | 4000: на меньших ответ обрывался |
+
+## Наблюдаемость
+
+`LLMRequestLog` пишется на каждый вызов модели — и удачный, и неудачный.
+Главное поле — `error_detail`: тело ответа провайдера. Без него ошибка вида
+«HTTP 400» недиагностируема.
+
+| Пишем | Не пишем |
+|---|---|
+| операцию, статус, HTTP-код | текст промта |
+| тело ошибки провайдера | ответ модели |
+| провайдера и имя модели | ключ доступа |
+| длительность и токены | |
+
+Ошибки переводятся в подсказки: «проверьте `LLM_MODEL`», «проверьте
+`LLM_API_KEY`», «провайдер ограничил частоту запросов». Запись в журнал не
+может сломать основную операцию: сбой логирования глушится, исходное
+исключение поднимается дальше.
+
+## Быстрый старт
+
+### Docker
 
 ```bash
 git clone https://github.com/Beluncho/HH_Django.git
 cd HH_Django
-git checkout AI_Agents_diploma  # ветка с модулем анализа вакансий (candidate_trainer)
-```
+git checkout AI_Agents_diploma
 
-Модуль `candidate_trainer` (анализ требований вакансии, объяснение навыков,
-тестовое собеседование) есть только в ветке `AI_Agents_diploma`. В ветках
-`main` и `nu31-api` его нет.
-### 2. Создание и активация виртуального окружения
-
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
-```
-### 3. Установка зависимостей
-
-```bash
-pip install -r HH/requirements.txt
-```
-### 4. Настройка переменных окружения
-Создайте файл .env в корне проекта:
-
-```env
-SECRET_KEY=ваш-секретный-ключ-сгенерируйте-новый
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-```
-
-⚠️ Важно: Никогда не коммитьте .env файл в репозиторий! Добавьте его в .gitignore.
-
-Для модуля `candidate_trainer` этого минимума недостаточно: анализу вакансий нужен
-`HH_ACCESS_TOKEN` (при `HH_REQUIRE_ACCESS_TOKEN=1`), а объяснению навыков и
-собеседованию — заполненные `LLM_MODEL`, адрес провайдера (`LLM_BASE_URL`) и
-`LLM_API_KEY`. Полный
-список переменных и их значения — в
-[`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
-
-Django не читает файл `.env` сам: настройки берутся из переменных окружения
-процесса. В Docker их передаёт `env_file` из `docker-compose.yml` (файл `.env.dev`),
-при локальном запуске — скрипт `./run_local.sh`, который экспортирует `.env.local`.
-
-### 5. Применение миграций и создание суперпользователя
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-```
-
-### 6. Запуск сервера разработки
-   
-```bash
-python manage.py runserver
-Сайт будет доступен: http://127.0.0.1:8000
-Админ-панель: http://127.0.0.1:8000/admin
-```
-### 📁 Структура проекта
-```text
-HH_Django/
-├── HH/                      # Корневая папка проекта
-│   ├── HH/                  # Основная конфигурация Django
-│   │   ├── settings.py      # Настройки проекта
-│   │   ├── urls.py          # Головные URL-маршруты
-│   │   └── wsgi.py
-│   ├── hhapp/               # Основное приложение (вакансии, резюме)
-│   │   ├── models.py
-│   │   ├── views.py
-│   │   ├── services.py      # Клиент HH API
-│   │   ├── management/      # Кастомные команды manage.py
-│   │   ├── migrations/
-│   │   └── templates/hhapp/
-│   ├── userapp/             # Приложение пользователей (кастомная модель)
-│   │   ├── models.py        # WebSiteUser (замена стандартного User)
-│   │   ├── views.py
-│   │   ├── migrations/
-│   │   └── templates/userapp/
-│   ├── static/              # Статические файлы (CSS, JS, изображения)
-│   │   ├── assets/
-│   │   ├── css/
-│   │   ├── jquery/
-│   │   └── js/
-│   ├── media/               # Пользовательские файлы (аватарки, резюме)
-│   │   └── users/
-│   ├── templates/           # Глобальные шаблоны
-│   │   └── startbootstrap-creative-gh-pages/
-├── nginx/                   # Конфигурация для продакшена
-├── venv/                    # Виртуальное окружение (не коммитится)
-└── requirements.txt
-```
-
-### 🔌 API Endpoints (REST API)
-Метод	URL	Описание
-GET	/api/vacancies/	Список вакансий (пагинация 20 элементов)
-POST	/api/vacancies/	Создание новой вакансии (требуется аутентификация)
-GET	/api/resumes/	Список резюме
-GET	/api/vacancies/{id}/	Детальная информация о вакансии
-POST	/api/auth/login/	Вход через BasicAuth или SessionAuth
-Пример запроса к API:
-
-## 🐳 Запуск через Docker
-
-Проект полностью контейнеризирован и поддерживает два режима: разработка (development) и продакшен (production).
-
-### 📋 Основные команды Docker
-
-| Режим | Действие | Команда |
-|-------|----------|---------|
-| **DEV** | 🔨 Запуск с пересборкой | `docker compose up --build` |
-| **DEV** | 🚀 Запуск в фоне | `docker compose up -d --build` |
-| **DEV** | 🛑 Остановка | `docker compose down` |
-| **DEV** | 📝 Применить миграции | `docker compose exec web python manage.py migrate` |
-| **DEV** | 👤 Создать суперпользователя | `docker compose exec web python manage.py createsuperuser` |
-| **DEV** | 📦 Собрать статику | `docker compose exec web python manage.py collectstatic --noinput` |
-| **DEV** | 📊 Просмотр логов | `docker compose logs -f` |
-| **DEV** | 🐚 Войти в контейнер | `docker compose exec web bash` |
-| | | |
-| **PROD** | 🔨 Запуск с пересборкой | `docker compose -f docker-compose.prod.yml up --build` |
-| **PROD** | 🚀 Запуск в фоне | `docker compose -f docker-compose.prod.yml up -d --build` |
-| **PROD** | 🛑 Остановка | `docker compose -f docker-compose.prod.yml down` |
-| **PROD** | 📝 Применить миграции | `docker compose -f docker-compose.prod.yml exec web python manage.py migrate` |
-| **PROD** | 👤 Создать суперпользователя | `docker compose -f docker-compose.prod.yml exec web python manage.py createsuperuser` |
-| **PROD** | 📦 Собрать статику | `docker compose -f docker-compose.prod.yml exec web python manage.py collectstatic --noinput` |
-| **PROD** | 📊 Просмотр логов | `docker compose -f docker-compose.prod.yml logs -f` |
-| **PROD** | 🐚 Войти в контейнер | `docker compose -f docker-compose.prod.yml exec web bash` |
-| | | |
-| **ОБЩИЕ** | 🧹 Полная очистка (с удалением БД) | `docker compose down -v` |
-| **ОБЩИЕ** | 🗑️ Удалить неиспользуемые образы | `docker image prune -a` |
-| **ОБЩИЕ** | ✅ Проверка статуса контейнеров | `docker ps` |
-
-### 🔧 Переменные окружения для Docker
-
-Рабочие `.env.dev` и `.env.prod` не хранятся в Git. Создайте их из примеров:
-
-```bash
 cp .env.dev.example .env.dev
-cp .env.prod.example .env.prod
-```
+# заполнить SECRET_KEY, HH_ACCESS_TOKEN, LLM_API_KEY
 
-Перед production-запуском обязательно замените `SECRET_KEY`,
-`POSTGRES_PASSWORD` и список `ALLOWED_HOSTS`.
-
-Настройка модуля анализа вакансий, LLM, embeddings и RAG для
-собеседований подробно описана в
-[`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
-
-**Для разработки (`.env.dev`):**
-```env
-DEBUG=1
-SECRET_KEY=replace-with-a-local-development-secret
-ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-POSTGRES_ENGINE=django.db.backends.postgresql
-POSTGRES_USER=django_user
-POSTGRES_PASSWORD=django_password
-POSTGRES_DB=django_db
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-```
-# 💡 Быстрый старт с Docker
-
-# 1. Клонируйте репозиторий
-git clone https://github.com/Beluncho/HH_Django.git
-cd HH_Django
-
-# 2. Для разработки
-```
-cp .env.dev.example .env.dev
 docker compose up -d --build
 docker compose exec web python manage.py createsuperuser
 ```
-# Открыть http://localhost:8000
 
-# 3. Для продакшена
-```
-cp .env.prod.example .env.prod
-# Замените секреты и ALLOWED_HOSTS в .env.prod
-docker compose -f docker-compose.prod.yml up -d --build
-```
-# Открыть http://localhost:1337
+Приложение — `http://127.0.0.1:8000/`, тренажёр — `/trainer/`,
+админка — `/admin/`.
 
-```bash
-curl -H 'Accept: application/json' http://127.0.0.1:8000/api/vacancies/
-
-```
-
-### 🧪 Проверка без Docker
-
-Если Docker Compose недоступен, проект запускается напрямую на локальном SQLite:
+### Без Docker, на демо-данных
 
 ```bash
 python -m venv venv
-venv\Scripts\activate          # Windows; в Linux/macOS: . venv/bin/activate
+venv\Scripts\activate                 # Linux/macOS: . venv/bin/activate
 pip install "Django==5.1.6" "djangorestframework==3.15.2" requests
-cp .env.local.example .env.local   # подставить SECRET_KEY и LLM_API_KEY
+
+cp .env.local.example .env.local      # достаточно SECRET_KEY
 ./run_local.sh migrate
 ./run_local.sh loaddata demo_analysis
 ./run_local.sh runserver
 ```
 
-Открыть `http://127.0.0.1:8000/trainer/` и войти как `demo` / `demo1234` — в базе
-уже лежит готовый прогон: 8 вакансий HH.ru, 36 навыков и 2 готовых объяснения
-навыков. Ключи HH и LLM для просмотра не нужны, они требуются только для новых
-запросов и новых объяснений.
+Вход: `demo` / `demo1234`. В демо-выгрузке уже есть анализ на 8 вакансий,
+36 навыков, 120 фрагментов базы знаний и 2 готовых объяснения. Ключи HH и LLM
+для просмотра не нужны.
 
-Разбор команд, параметры и типичные ошибки — в
-[`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md), раздел
-«Запуск без Docker».
+Полная инструкция — [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
 
-### 🛠️ Управление проектом
-
-#### Поиск вакансий через веб-интерфейс
-
-Поиск на главной странице доступен без авторизации.
-
-- До ввода запроса отображаются все вакансии из локальной базы.
-- После ввода запроса локальные вакансии фильтруются по названию
-  и работодателю.
-- Результаты HH.ru выводятся отдельным списком.
-- Вакансии, найденные через веб-интерфейс, в базу не сохраняются.
-
-#### Парсер с сохранением в базу
-
-Management command сохраняет найденные вакансии и работодателей в локальную
-базу. Перед первым запуском создайте пользователя с именем `parser_bot`
-через админ-панель.
-
-Запуск в Docker:
+## Тесты
 
 ```bash
-docker compose exec web python manage.py full_db
+./run_local.sh test candidate_trainer
+# 90 tests, 10 files
 ```
 
-По умолчанию команда ищет `python developer` в Москве и сохраняет полученные
-результаты. Повторный запуск может добавить дублирующиеся вакансии.
+Тесты не ходят в HH API и LLM: клиенты подменяются фейками. Проверяются
+нормализация, анализ, клиент HH, база знаний и импорт, объяснения,
+собеседование, журнал LLM и представления.
 
-#### Запуск тестов
-```bash
-python manage.py test
+## Структура модуля
+
+```text
+HH/candidate_trainer/
+├── models.py                 # 12 моделей
+├── views.py, urls.py         # dashboard, анализ, собеседование
+├── services/
+│   ├── analysis.py           # сбор и анализ вакансий
+│   ├── hh_client.py          # клиент HH API
+│   ├── normalization.py      # нормализация навыков
+│   ├── embeddings.py         # локальные векторы
+│   ├── knowledge.py          # чанки, embeddings, retrieval
+│   ├── knowledge_import.py   # импорт методичек
+│   ├── interview.py          # объяснения и собеседование
+│   ├── llm.py                # OpenAI-совместимый клиент
+│   ├── llm_log.py            # журнал обращений
+│   └── prompts.py            # шаблоны промтов
+├── management/commands/      # run_experiment, import_knowledge, ...
+├── templates/, static/       # интерфейс тренажёра
+├── tests/                    # 90 тестов
+└── docs/                     # описание команд
 ```
 
-#### Проверка покрытия кода тестами
-``` bash
-coverage run manage.py test
-coverage report
-```
+## Документация
 
-#### Сбор статических файлов (для продакшена)
-```bash
-python manage.py collectstatic
-```
+- [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md) — запуск,
+  переменные окружения, RAG, demo-данные;
+- [`docs/stage4_report.md`](docs/stage4_report.md) — эксперименты и выбор параметров;
+- [`docs/stage5_report.md`](docs/stage5_report.md) — презентация защиты;
+- [`docs/stage6_report.md`](docs/stage6_report.md) — журнал LLM и загрузка базы знаний;
+- [`HH/candidate_trainer/docs/`](HH/candidate_trainer/docs/) — команды
+  `run_analysis_demo` и `run_experiment`.
 
-### ⚠️ Важные замечания по безопасности
-#### Перед деплоем в продакшен необходимо:
+## Ограничения
 
-#### Секретный ключ — вынести в переменные окружения:
-```bash
-python
-import os
-SECRET_KEY = os.getenv('SECRET_KEY')
-Отключить DEBUG:
-
-python
-DEBUG = False
-Заполнить ALLOWED_HOSTS:
-
-python
-ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
-Сменить базу данных с SQLite на PostgreSQL:
-
-python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': '5432',
-    }
-}
-Настроить реальный Email backend (SMTP) вместо консольного
-```
-
-### 📦 Используемые технологии
-Backend: Django 5.1, Django REST Framework 3.15
-
-База данных: SQLite (dev) / PostgreSQL (рекомендуется для prod)
-
-Отладка: django-debug-toolbar
-
-Тестирование: coverage, mixer, Faker
-
-Работа с файлами: Pillow, django-cleanup
-
-Внешние API: requests, pycbrf (курсы валют)
-
-Фронтенд: Bootstrap (стартовый шаблон Creative), jQuery
+- Анализ ограничен 20 вакансиями HH.ru за прогон — это осознанный лимит.
+- Качество объяснений зависит от наполнения `skill-core`: без методичек
+  объяснение вернёт понятную ошибку, а не выдуманный ответ.
+- RAG — точный перебор по cosine similarity; для больших корпусов нужен
+  pgvector или отдельный индекс.
+- Интерфейс — server-rendered HTML; JS только для индикатора «система работает»
+  и без него приложение остаётся рабочим.
+- Ветка `AI_Agents_diploma` содержит и платформу первого диплома, и модуль.
