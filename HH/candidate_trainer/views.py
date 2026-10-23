@@ -58,7 +58,8 @@ def dashboard(request):
     analyses = request.user.vacancy_analyses.all()[:20]
     sessions = (
         request.user.interview_sessions.select_related("analysis")
-        .filter(status=InterviewSession.Status.ACTIVE)[:10]
+        .filter(status=InterviewSession.Status.ACTIVE)
+        .annotate(message_count=Count("messages"))[:10]
     )
     return render(
         request,
@@ -99,12 +100,21 @@ def analysis_detail(request, pk):
     for analysis_skill in analysis_skills:
         analysis_skill.latest_explanation = explanation_map.get(analysis_skill.pk)
 
+    active_sessions = (
+        analysis.interview_sessions.filter(
+            user=request.user, status=InterviewSession.Status.ACTIVE
+        )
+        .annotate(message_count=Count("messages"))
+        .order_by("-created_at")
+    )
+
     return render(
         request,
         "candidate_trainer/analysis_detail.html",
         {
             "analysis": analysis,
             "analysis_skills": analysis_skills,
+            "active_sessions": active_sessions,
         },
     )
 

@@ -81,13 +81,14 @@
 <section class="content-section" aria-labelledby="sessions-title">
     <div class="section-heading">
         <h2 id="sessions-title">Активные собеседования</h2>
+        <span class="section-note">{{ sessions|length }} активных</span>
     </div>
     <div class="session-list">
         {% for session in sessions %}
         <a class="session-row" href="{% url 'candidate_trainer:interview_detail' pk=session.pk %}">
             <span>
                 <strong>{{ session.analysis.query }}</strong>
-                <small>{{ session.created_at|date:"d.m.Y H:i" }}</small>
+                <small>{{ session.created_at|date:"d.m.Y H:i" }} • {{ session.message_count }} сообщений</small>
             </span>
             <i class="bi bi-arrow-right" aria-hidden="true"></i>
         </a>
