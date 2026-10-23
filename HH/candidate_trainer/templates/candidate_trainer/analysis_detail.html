@@ -11,13 +11,53 @@
     </a>
 </div>
 
-<div class="page-heading analysis-heading">
-    <div>
-        <h1>{{ analysis.query }}</h1>
-        <p>{{ analysis.area_name }} · создан {{ analysis.created_at|date:"d.m.Y H:i" }}</p>
-    </div>
-    <span class="status status-{{ analysis.status }}">{{ analysis.get_status_display }}</span>
-</div>
+<div class="analysis-layout">
+    <!-- Sticky Sidebar -->
+    <aside class="analysis-sidebar">
+        <nav class="sidebar-nav" aria-label="Навигация по странице">
+            <h3 class="sidebar-title">На странице</h3>
+            <ul class="sidebar-menu">
+                <li><a href="#overview" class="sidebar-link">Обзор</a></li>
+                {% if analysis.status == "completed" and analysis_skills %}
+                <li>
+                    <a href="#skills" class="sidebar-link">
+                        Навыки
+                        <span class="sidebar-badge">{{ analysis_skills|length }}</span>
+                    </a>
+                </li>
+                {% if active_sessions %}
+                <li>
+                    <a href="#interviews" class="sidebar-link">
+                        Собеседования
+                        <span class="sidebar-badge">{{ active_sessions|length }}</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for item in analysis_skills %}
+                {% if item.global_explanation %}
+                <li>
+                    <a href="#skill-{{ item.skill.id }}" class="sidebar-link sidebar-link-explanation">
+                        {{ item.skill.canonical_name }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                <li><a href="#vacancies" class="sidebar-link">Вакансии</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="analysis-content">
+        <div id="overview" class="scroll-target"></div>
+        <div class="page-heading analysis-heading">
+            <div>
+                <h1>{{ analysis.query }}</h1>
+                <p>{{ analysis.area_name }} · создан {{ analysis.created_at|date:"d.m.Y H:i" }}</p>
+            </div>
+            <span class="status status-{{ analysis.status }}">{{ analysis.get_status_display }}</span>
+        </div>
 
 {% if analysis.error_message %}
 <div class="alert {% if analysis.status == 'failed' %}alert-danger{% else %}alert-warning{% endif %}">
@@ -42,10 +82,12 @@
 </div>
 
 {% if analysis.status == "completed" %}
+<div id="skills" class="scroll-target"></div>
 <section class="content-section" aria-labelledby="skills-title">
     <div class="section-heading">
         <h2 id="skills-title">Требуемые навыки</h2>
         {% if analysis_skills %}
+        <div id="interviews" class="scroll-target"></div>
         {% if active_sessions %}
         <div>
             <p style="margin-bottom: 1rem; color: var(--muted-color);">
@@ -148,6 +190,7 @@
 {% endif %}
 {% endfor %}
 
+<div id="vacancies" class="scroll-target"></div>
 <section class="content-section" aria-labelledby="vacancies-title">
     <div class="section-heading">
         <h2 id="vacancies-title">Исходные вакансии</h2>
@@ -175,4 +218,59 @@
     </div>
 </section>
 {% endif %}
+
+    </div><!-- .analysis-content -->
+</div><!-- .analysis-layout -->
+
+<script>
+// Sticky sidebar navigation with active section highlighting
+(function() {
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const scrollTargets = document.querySelectorAll('.scroll-target');
+
+    if (!sidebarLinks.length || !scrollTargets.length) return;
+
+    // Smooth scroll to section
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const target = document.getElementById(targetId);
+
+            if (target) {
+                const offset = 80; // Header height
+                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Highlight active section on scroll
+    const observerOptions = {
+        root: null,
+        rootMargin: '-100px 0px -66%',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    scrollTargets.forEach(target => observer.observe(target));
+})();
+</script>
+
 {% endblock %}
