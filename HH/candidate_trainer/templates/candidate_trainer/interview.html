@@ -102,17 +102,17 @@
                 <div><span>Глубина</span><strong>{{ insight.depth }}/5</strong></div>
                 <div><span>Практика</span><strong>{{ insight.practical_application }}/5</strong></div>
             </div>
-            <p>{{ insight.summary }}</p>
+            <div class="insight-summary">{{ insight.summary|render_markdown }}</div>
             {% if insight.gaps %}
             <div class="insight-list">
                 <strong>Пробелы</strong>
-                <ul>{% for gap in insight.gaps %}<li>{{ gap }}</li>{% endfor %}</ul>
+                <ul>{% for gap in insight.gaps %}<li>{{ gap|render_markdown }}</li>{% endfor %}</ul>
             </div>
             {% endif %}
             {% if insight.recommendations %}
             <div class="insight-list">
                 <strong>Рекомендации</strong>
-                <ul>{% for recommendation in insight.recommendations %}<li>{{ recommendation }}</li>{% endfor %}</ul>
+                <ul>{% for recommendation in insight.recommendations %}<li>{{ recommendation|render_markdown }}</li>{% endfor %}</ul>
             </div>
             {% endif %}
         </article>
