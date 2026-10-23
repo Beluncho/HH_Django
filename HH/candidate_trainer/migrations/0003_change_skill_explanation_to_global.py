@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('candidate_trainer', '0001_initial'),
+        ('candidate_trainer', '0002_llmrequestlog'),
     ]
 
     operations = [

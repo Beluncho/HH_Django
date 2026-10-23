@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HH Django — скриншоты</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #203038; background: #f2f5f5; }
+    body { margin: 0; }
+    main { max-width: 1400px; margin: auto; padding: 36px 24px 64px; }
+    h1 { margin: 0 0 12px; font-size: 32px; }
+    h2 { margin: 32px 0 16px; font-size: 23px; }
+    p { line-height: 1.6; }
+    .intro { max-width: 900px; color: #52646e; }
+    .notice { padding: 16px 20px; border-left: 4px solid #c38319; background: #fff7e7; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 24px; }
+    article { background: white; border: 1px solid #dce3e4; border-radius: 12px; overflow: hidden; }
+    article a { display: block; }
+    article img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: white; }
+    .caption { padding: 16px 18px 18px; }
+    .caption h3 { margin: 0 0 8px; font-size: 18px; }
+    .caption p { margin: 0; font-size: 14px; color: #52646e; }
+    .label { display: inline-block; margin-bottom: 10px; padding: 3px 9px; border-radius: 5px; background: #e5f4ed; color: #126745; font-size: 12px; font-weight: 600; }
+    .draft { background: #fff2d9; color: #946109; }
+    .extra { background: #e9eef5; color: #48617a; }
+    a { color: #137361; }
+    footer { margin-top: 32px; font-size: 14px; color: #52646e; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>HH Django — скриншоты</h1>
+  <p class="intro">22 октября 2026 · 14 PNG · 1600×900 · каждый файл меньше 500 КБ.<br>Нажмите на кадр, чтобы открыть оригинал. Все материалы локальные, ничего не опубликовано.</p>
+  <p class="notice">Ответы интервью, имя пользователя и email скрыты только в кадрах. Оценки и рекомендации сохранены: проверьте их перед публикацией. База и пароль не изменены.</p>
+  <h2>AI-модуль</h2>
+  <section class="grid" aria-label="Скриншоты AI-модуля">
+    <article><a href="django-08-trainer.png"><img src="django-08-trainer.png" alt="Дашборд тренажёра с формой и историей анализов"></a><div class="caption"><span class="label">№8 · Готово</span><h3>Тренажёр кандидата</h3><p>Форма запуска, два существующих анализа и активные собеседования.</p></div></article>
+    <article><a href="django-09-analysis.png"><img src="django-09-analysis.png" alt="Результаты анализа junior python developer"></a><div class="caption"><span class="label">№9 · Готово</span><h3>Навыки и частоты</h3><p>8 вакансий, 36 навыков, регион и частота по исходным вакансиям.</p></div></article>
+    <article><a href="django-10-explanation-text.png"><img src="django-10-explanation-text.png" alt="Начало объяснения Docker" loading="lazy"></a><div class="caption"><span class="label extra">№10 · Дополнительный кадр</span><h3>Объяснение Docker</h3><p>Сохранённое объяснение: назначение, понятия и практический пример.</p></div></article>
+    <article><a href="django-10-explanation.png"><img src="django-10-explanation.png" alt="Конец объяснения Docker и раскрытые источники" loading="lazy"></a><div class="caption"><span class="label">№10 · Готово</span><h3>Объяснение и RAG-источники</h3><p>План подготовки, ограничения и раскрытый список источников контекста.</p></div></article>
+    <article><a href="django-11-interview.png"><img src="django-11-interview.png" alt="Собеседование с разбором ответа и тремя оценками" loading="lazy"></a><div class="caption"><span class="label">№11 · Скрыт исходный ответ</span><h3>Тестовое собеседование</h3><p>Вопрос, три шкалы, пробелы и рекомендации. Текст ответа не публикуется.</p></div></article>
+    <article><a href="django-13-knowledge-import.png"><img src="django-13-knowledge-import.png" alt="Форма загрузки методички в базу знаний" loading="lazy"></a><div class="caption"><span class="label">№13 · Готово</span><h3>Импорт знаний</h3><p>Синтетический файл выбран в форме, но загрузка и индексация не запускались.</p></div></article>
+    <article><a href="django-13-knowledge-collections.png"><img src="django-13-knowledge-collections.png" alt="Список коллекций знаний" loading="lazy"></a><div class="caption"><span class="label extra">№13 · Дополнительный кадр</span><h3>Коллекции знаний</h3><p>Существующие коллекции, embedding-модель и количество документов.</p></div></article>
+  </section>
+  <h2>Платформа</h2>
+  <section class="grid" aria-label="Скриншоты платформы">
+    <article><a href="django-05-profile.png"><img src="django-05-profile.png" alt="Форма регистрации" loading="lazy"></a><div class="caption"><span class="label">№5 · Регистрация</span><h3>Регистрация</h3><p>Допустимый вариант вместо личного профиля. Поля не содержат персональных данных.</p></div></article>
+    <article><a href="django-06-api.png"><img src="django-06-api.png" alt="Пагинированный JSON-ответ Django REST Framework" loading="lazy"></a><div class="caption"><span class="label">№6 · Готово</span><h3>REST API</h3><p>HTTP 200 и реальный JSON текущей базы: count, next, previous и пустой results.</p></div></article>
+    <article><a href="django-01-main-hero.png"><img src="django-01-main-hero.png" alt="Первый экран главной страницы" loading="lazy"></a><div class="caption"><span class="label extra">Дополнительный кадр</span><h3>Главная: первый экран</h3><p>Шапка и исходный дизайн. Блок вакансий расположен ниже.</p></div></article>
+    <article><a href="django-01-main.png"><img src="django-01-main.png" alt="Поиск на главной странице с пустым локальным списком" loading="lazy"></a><div class="caption"><span class="label draft">№1 · Черновик</span><h3>Главная: поиск</h3><p>Поиск и навигация сняты; для готового кадра не хватает локальных вакансий.</p></div></article>
+    <article><a href="django-02-search.png"><img src="django-02-search.png" alt="Результаты публичного поиска Python" loading="lazy"></a><div class="caption"><span class="label draft">№2 · Частично</span><h3>Поиск Python</h3><p>Реальные результаты HH.ru, названия компаний скрыты. Локальный список пуст.</p></div></article>
+    <article><a href="django-04-employers.png"><img src="django-04-employers.png" alt="Страница работодателей без записей" loading="lazy"></a><div class="caption"><span class="label draft">№4 · Черновик</span><h3>Работодатели</h3><p>В текущей локальной базе нет работодателей; полноценную карточку снять нельзя.</p></div></article>
+    <article><a href="django-07-admin.png"><img src="django-07-admin.png" alt="Главная страница администрирования Django" loading="lazy"></a><div class="caption"><span class="label draft">№7 · Частично</span><h3>Админ-панель</h3><p>Модели платформы и AI-модуля. Заполненных списков локальных вакансий и работодателей нет.</p></div></article>
+  </section>
+  <footer><p>Не сняты №3 (нет локальной вакансии) и №12 (журнал LLM пуст). Подробности и проверки — в <a href="REPORT.md">REPORT.md</a>.</p></footer>
+</main>
+</body>
+</html>
