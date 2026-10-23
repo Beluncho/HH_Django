@@ -42,6 +42,6 @@ def strip_list_marker(text):
     if not text:
         return ""
 
-    # Удаляем маркеры * - + в начале
-    cleaned = re.sub(r'^\s*[\*\-\+]\s+', '', text.strip())
+    # Удаляем маркеры * - + в начале (с опциональным пробелом после)
+    cleaned = re.sub(r'^\s*[\*\-\+]\s*', '', str(text).strip())
     return mark_safe(cleaned)
