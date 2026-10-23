@@ -264,9 +264,16 @@
      подходит и на весь слайд, и на половину колонки. */
   .figure { margin: 0.35em 0 0.15em; }
   .figure img { display: block; width: 100%; height: auto; }
-  .figure figcaption { font-size: 0.5em; color: var(--muted); margin-top: 0.4em; }
+  .figure figcaption { font-size: 0.5em; color: var(--muted); margin-top: 0.4em; line-height: 1.4; }
   /* Рисунок внутри ячейки таблицы не должен раздувать строку: ширина ограничена */
   .figure.inline { max-width: 360px; }
+
+  /* Скриншоты интерфейса: рамка, тень, скругление углов */
+  .figure img[src*="screenshots/"] {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(15, 32, 39, 0.12);
+  }
 
   .footer-links { font-size: 0.58em; line-height: 1.65; }
 
