@@ -86,19 +86,19 @@ def analysis_detail(request, pk):
         user=request.user,
     )
     analysis_skills = list(analysis.analysis_skills.all())
-    explanation_map = {}
+
+    # Загружаем глобальные объяснения для навыков
+    skill_ids = [ask.skill_id for ask in analysis_skills if ask.skill_id]
     explanations = (
-        SkillExplanation.objects.filter(
-            user=request.user,
-            analysis_skill__analysis=analysis,
-        )
-        .select_related("analysis_skill__skill")
-        .order_by("analysis_skill_id", "-created_at")
+        SkillExplanation.objects
+        .filter(skill_id__in=skill_ids, user__isnull=True, is_active=True)
+        .select_related("skill")
     )
-    for explanation in explanations:
-        explanation_map.setdefault(explanation.analysis_skill_id, explanation)
+    explanation_map = {exp.skill_id: exp for exp in explanations}
+
     for analysis_skill in analysis_skills:
-        analysis_skill.latest_explanation = explanation_map.get(analysis_skill.pk)
+        if analysis_skill.skill_id:
+            analysis_skill.global_explanation = explanation_map.get(analysis_skill.skill_id)
 
     active_sessions = (
         analysis.interview_sessions.filter(
@@ -142,16 +142,27 @@ def skill_explanation(request, pk):
         pk=pk,
         analysis__user=request.user,
     )
+
+    if not analysis_skill.skill:
+        messages.error(request, "Навык не найден.")
+        return redirect("candidate_trainer:analysis_detail", pk=analysis_skill.analysis_id)
+
     try:
-        explanation = explain_skill(analysis_skill, user=request.user)
+        from candidate_trainer.services.explanation import get_or_create_global_explanation
+
+        explanation = get_or_create_global_explanation(
+            analysis_skill.skill,
+            user=request.user,
+        )
         messages.success(
             request,
             f"Объяснение навыка «{analysis_skill.skill.canonical_name}» готово.",
         )
-        fragment = f"#explanation-{explanation.pk}"
+        fragment = f"#skill-{analysis_skill.skill_id}"
     except CandidateTrainerError as error:
         messages.error(request, humanize_llm_error(error))
         fragment = ""
+
     detail_url = reverse(
         "candidate_trainer:analysis_detail",
         kwargs={"pk": analysis_skill.analysis_id},

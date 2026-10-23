@@ -92,11 +92,20 @@
                     <td class="text-end">
                         <form method="post" action="{% url 'candidate_trainer:skill_explanation' pk=item.pk %}">
                             {% csrf_token %}
+                            {% if item.global_explanation %}
+                            <button class="btn btn-sm btn-outline-secondary" type="submit"
+                                    data-busy="Обновляю…"
+                                    title="Объяснение уже существует. Нажмите для обновления.">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                                Посмотреть
+                            </button>
+                            {% else %}
                             <button class="btn btn-sm btn-outline-primary" type="submit"
                                     data-busy="Объясняю…">
                                 <i class="bi bi-book" aria-hidden="true"></i>
                                 Объяснить
                             </button>
+                            {% endif %}
                         </form>
                     </td>
                 </tr>
@@ -109,30 +118,34 @@
 </section>
 
 {% for item in analysis_skills %}
-    {% if item.latest_explanation %}
-    <section class="explanation-block" id="explanation-{{ item.latest_explanation.pk }}">
-        <div class="section-heading">
-            <h2>{{ item.skill.canonical_name }}</h2>
-            <span class="section-note">{{ item.latest_explanation.created_at|date:"d.m.Y H:i" }}</span>
-        </div>
-        <div class="explanation-text">{{ item.latest_explanation.content|render_markdown }}</div>
-        <details>
-            <summary>Источники контекста</summary>
-            <ul class="source-list">
-                {% for source in item.latest_explanation.sources %}
-                <li>
-                    {% if source.url %}
-                    <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }}</a>
-                    {% else %}
-                    {{ source.title }}
-                    {% endif %}
-                    <span>{{ source.source_type }}</span>
-                </li>
-                {% endfor %}
-            </ul>
-        </details>
-    </section>
+{% if item.global_explanation %}
+<section class="content-section explanation-section" id="skill-{{ item.skill.id }}" aria-labelledby="explanation-title-{{ item.skill.id }}">
+    <div class="section-heading">
+        <h3 id="explanation-title-{{ item.skill.id }}">{{ item.skill.canonical_name }}</h3>
+        <small class="text-muted">Обновлено: {{ item.global_explanation.created_at|date:"d.m.Y H:i" }}</small>
+    </div>
+    <div class="explanation-text">
+        {{ item.global_explanation.content|render_markdown }}
+    </div>
+    {% if item.global_explanation.sources %}
+    <details class="source-details">
+        <summary>Источники контекста</summary>
+        <ul class="source-list">
+            {% for source in item.global_explanation.sources %}
+            <li>
+                {% if source.url %}
+                <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }}</a>
+                {% else %}
+                {{ source.title }}
+                {% endif %}
+                <span>{{ source.source_type }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
     {% endif %}
+</section>
+{% endif %}
 {% endfor %}
 
 <section class="content-section" aria-labelledby="vacancies-title">
