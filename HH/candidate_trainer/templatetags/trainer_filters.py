@@ -1,5 +1,6 @@
 """Template filters for candidate_trainer."""
 
+import re
 import markdown
 from django import template
 from django.utils.safestring import mark_safe
@@ -30,3 +31,17 @@ def render_markdown(text):
     )
     html = md.convert(text)
     return mark_safe(html)
+
+
+@register.filter(name="strip_list_marker")
+def strip_list_marker(text):
+    """
+    Удаляет markdown-маркеры списков из начала строки.
+    Используется для элементов, которые уже обёрнуты в <li>.
+    """
+    if not text:
+        return ""
+
+    # Удаляем маркеры * - + в начале
+    cleaned = re.sub(r'^\s*[\*\-\+]\s+', '', text.strip())
+    return mark_safe(cleaned)

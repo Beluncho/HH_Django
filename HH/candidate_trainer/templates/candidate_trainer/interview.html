@@ -106,13 +106,13 @@
             {% if insight.gaps %}
             <div class="insight-list">
                 <strong>Пробелы</strong>
-                <ul>{% for gap in insight.gaps %}<li>{{ gap|render_markdown }}</li>{% endfor %}</ul>
+                <ul>{% for gap in insight.gaps %}<li>{{ gap|strip_list_marker }}</li>{% endfor %}</ul>
             </div>
             {% endif %}
             {% if insight.recommendations %}
             <div class="insight-list">
                 <strong>Рекомендации</strong>
-                <ul>{% for recommendation in insight.recommendations %}<li>{{ recommendation|render_markdown }}</li>{% endfor %}</ul>
+                <ul>{% for recommendation in insight.recommendations %}<li>{{ recommendation|strip_list_marker }}</li>{% endfor %}</ul>
             </div>
             {% endif %}
         </article>
