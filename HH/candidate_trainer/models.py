@@ -241,15 +241,22 @@ class KnowledgeChunk(models.Model):
 
 
 class SkillExplanation(models.Model):
+    skill = models.ForeignKey(
+        Skill,
+        on_delete=models.CASCADE,
+        related_name="explanations",
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="skill_explanations",
+        null=True,
+        blank=True,
+        help_text="NULL = глобальное объяснение для всех пользователей",
     )
-    analysis_skill = models.ForeignKey(
-        AnalysisSkill,
-        on_delete=models.CASCADE,
-        related_name="explanations",
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Только одна активная версия на skill+user пару",
     )
     content = models.TextField()
     sources = models.JSONField(default=list)
@@ -259,6 +266,21 @@ class SkillExplanation(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=("skill", "user", "is_active")),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("skill", "user"),
+                condition=models.Q(is_active=True),
+                name="unique_active_explanation_per_skill_user",
+            ),
+        ]
+
+    def __str__(self):
+        user_label = f"user:{self.user_id}" if self.user_id else "global"
+        status = "active" if self.is_active else "archived"
+        return f"{self.skill.canonical_name} ({user_label}, {status})"
 
 
 class InterviewSession(models.Model):
