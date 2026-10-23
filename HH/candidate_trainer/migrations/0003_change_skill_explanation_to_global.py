@@ -80,24 +80,7 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=True, help_text='Только одна активная версия на skill+user пару'),
         ),
 
-        # Шаг 3: Миграция данных
-        migrations.RunPython(
-            migrate_explanations_to_global,
-            reverse_code=migrations.RunPython.noop,
-        ),
-
-        # Шаг 4: Сделать skill обязательным
-        migrations.AlterField(
-            model_name='skillexplanation',
-            name='skill',
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name='explanations',
-                to='candidate_trainer.skill',
-            ),
-        ),
-
-        # Шаг 5: Сделать user nullable
+        # Шаг 3: Сделать user nullable ПЕРЕД миграцией данных
         migrations.AlterField(
             model_name='skillexplanation',
             name='user',
@@ -108,6 +91,23 @@ class Migration(migrations.Migration):
                 related_name='skill_explanations',
                 to=settings.AUTH_USER_MODEL,
                 help_text='NULL = глобальное объяснение для всех пользователей',
+            ),
+        ),
+
+        # Шаг 4: Миграция данных
+        migrations.RunPython(
+            migrate_explanations_to_global,
+            reverse_code=migrations.RunPython.noop,
+        ),
+
+        # Шаг 5: Сделать skill обязательным
+        migrations.AlterField(
+            model_name='skillexplanation',
+            name='skill',
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='explanations',
+                to='candidate_trainer.skill',
             ),
         ),
 
