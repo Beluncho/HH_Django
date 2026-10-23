@@ -330,6 +330,26 @@
       </aside>
     </section>
 
+    <!-- 2.1 Существующая платформа (скриншоты) -->
+    <section>
+      <h2>Существующая платформа HH_Django</h2>
+      <div class="cols">
+        <figure class="figure">
+          <img src="img/screenshots/django-01-main.png" alt="Главная страница с публичным поиском вакансий">
+          <figcaption>Главная страница — поиск вакансий через HH.ru API</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="img/screenshots/django-02-search.png" alt="Результаты поиска вакансий">
+          <figcaption>Результаты поиска — список вакансий с фильтрами</figcaption>
+        </figure>
+      </div>
+      <aside class="notes">
+        Вот как выглядела платформа до добавления модуля candidate_trainer.<br>
+        Слева — главная с формой поиска. Справа — выдача результатов.<br>
+        Работало хорошо для поиска, но не помогало разобраться, что именно требуется в вакансиях.
+      </aside>
+    </section>
+
     <!-- 3. Задача -->
     <section>
       <h2>Задача: что должен решать модуль</h2>
@@ -475,6 +495,47 @@
       </aside>
     </section>
 
+    <!-- 6.1 Демонстрация работы модуля -->
+    <section>
+      <h2>Интерфейс модуля candidate_trainer</h2>
+      <div class="cols">
+        <figure class="figure">
+          <img src="img/screenshots/django-08-trainer.png" alt="Dashboard тренера с историей анализов">
+          <figcaption>Dashboard — список анализов пользователя</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="img/screenshots/django-09-analysis.png" alt="Страница анализа с таблицей навыков">
+          <figcaption>Анализ навыков — частота по вакансиям</figcaption>
+        </figure>
+      </div>
+      <aside class="notes">
+        Слева — dashboard тренера после авторизации. Видна история анализов пользователя.<br>
+        Справа — результат анализа: таблица навыков с частотой встречаемости по вакансиям,
+        а не просто подсчёт упоминаний в тексте.
+      </aside>
+    </section>
+
+    <!-- 6.2 Объяснение и интервью -->
+    <section>
+      <h2>Объяснение навыков и тестовое собеседование</h2>
+      <div class="cols">
+        <figure class="figure">
+          <img src="img/screenshots/django-10-explanation.png" alt="Объяснение навыка Python с источниками">
+          <figcaption>Объяснение навыка — разбор с фрагментами источников</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="img/screenshots/django-11-interview.png" alt="Интервью с оценкой ответов">
+          <figcaption>Тестовое интервью — диалог и структурированная оценка</figcaption>
+        </figure>
+      </div>
+      <aside class="notes">
+        Слева — объяснение навыка Python. Разбор опирается на найденные фрагменты из базы знаний,
+        указывается, чего не хватает в контексте.<br>
+        Справа — тестовое собеседование. Модель задаёт вопросы, пользователь отвечает, получает
+        структурированную оценку по явной рубрике: корректность, глубина, практика, пробелы, рекомендации.
+      </aside>
+    </section>
+
     <!-- 7. RAG -->
     <section>
       <h2>RAG: три коллекции знаний</h2>
@@ -492,6 +553,27 @@
         Если включённая коллекция interview пуста, приложение не падает: интервью идёт по профилю
         навыков, а отсутствие базы знаний — это штатная ситуация, а не ошибка.<br>
         Сырые ответы пользователя в общую базу автоматически не попадают.
+      </aside>
+    </section>
+
+    <!-- 7.1 Интерфейс базы знаний -->
+    <section>
+      <h2>Управление базой знаний</h2>
+      <div class="cols">
+        <figure class="figure">
+          <img src="img/screenshots/django-13-knowledge-collections.png" alt="Список коллекций базы знаний">
+          <figcaption>Коллекции знаний — три категории с метаданными</figcaption>
+        </figure>
+        <figure class="figure">
+          <img src="img/screenshots/django-13-knowledge-import.png" alt="Форма импорта документов в базу знаний">
+          <figcaption>Импорт знаний — загрузка .txt, .md, .json через админку</figcaption>
+        </figure>
+      </div>
+      <aside class="notes">
+        Слева — список коллекций в админке. Видны три коллекции: skill_core (из вакансий HH),
+        interview (методички), user_analytics (выводы из интервью).<br>
+        Справа — форма импорта документов. Тот же путь, что у команды import_knowledge.
+        Текст фрагмента закрыт от правки: без пересчёта вектора он разошёлся бы с ним молча.
       </aside>
     </section>
 
