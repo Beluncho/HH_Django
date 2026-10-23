@@ -12,10 +12,9 @@ from candidate_trainer.models import (
     LLMRequestLog,
 )
 from candidate_trainer.services.knowledge import KnowledgeRetriever, get_global_collection
-from candidate_trainer.services.llm_client import get_llm_client
-from candidate_trainer.services.prompts import explanation_prompt
-from candidate_trainer.services.record_llm import record_llm_call
-from candidate_trainer.services.errors import RAGContextUnavailableError
+from candidate_trainer.services.llm import get_llm_client
+from candidate_trainer.services.llm_log import record_llm_call
+from candidate_trainer.services.exceptions import RAGContextUnavailableError
 
 
 # Период актуальности глобального объяснения (365 дней)
