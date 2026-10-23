@@ -1,4 +1,5 @@
 {% extends "candidate_trainer/base.html" %}
+{% load trainer_filters %}
 
 {% block title %}{{ analysis.query }} — анализ{% endblock %}
 
@@ -45,11 +46,25 @@
     <div class="section-heading">
         <h2 id="skills-title">Требуемые навыки</h2>
         {% if analysis_skills %}
+        {% if active_sessions %}
+        <div>
+            <p style="margin-bottom: 1rem; color: var(--muted-color);">
+                У вас {{ active_sessions|length }} активн{% if active_sessions|length == 1 %}ое{% else %}ых{% endif %} собеседовани{% if active_sessions|length == 1 %}е{% else %}я{% endif %}:
+            </p>
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                {% for session in active_sessions %}
+                <a class="btn btn-outline-primary" href="{% url 'candidate_trainer:interview_detail' pk=session.pk %}">
+                    Продолжить #{{ session.pk }} ({{ session.message_count }} сообщ.)
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
         <form method="post" action="{% url 'candidate_trainer:interview_create' pk=analysis.pk %}">
             {% csrf_token %}
             <button class="btn btn-dark" type="submit" data-busy="Готовлю первый вопрос…">
                 <i class="bi bi-chat-square-text" aria-hidden="true"></i>
-                Начать собеседование
+                Начать новое собеседование
             </button>
         </form>
         {% endif %}
@@ -100,7 +115,7 @@
             <h2>{{ item.skill.canonical_name }}</h2>
             <span class="section-note">{{ item.latest_explanation.created_at|date:"d.m.Y H:i" }}</span>
         </div>
-        <div class="explanation-text">{{ item.latest_explanation.content|linebreaks }}</div>
+        <div class="explanation-text">{{ item.latest_explanation.content|render_markdown }}</div>
         <details>
             <summary>Источники контекста</summary>
             <ul class="source-list">
