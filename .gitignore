@@ -131,6 +131,14 @@ LOCAL_SECRETS.md
 HH/candidate_trainer/docs/plan_local_runner.md
 demo_map.md
 
+# Decktape (сборочный инструмент для экспорта презентации в PDF)
+node_modules/
+package.json
+package-lock.json
+
+# Локальный экспорт презентации в PDF (собирается decktape, не для VCS)
+docs/presentation.pdf
+
 # Кеш локальных embedding-моделей (создаётся при EMBEDDING_PROVIDER=sentence_transformers)
 HH/.model-cache/
 
