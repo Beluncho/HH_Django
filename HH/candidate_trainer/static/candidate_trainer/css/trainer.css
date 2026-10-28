@@ -4,8 +4,8 @@
     --line: #dce1e5;
     --surface: #ffffff;
     --canvas: #f4f6f5;
-    --primary: #146c5b;
-    --primary-hover: #0f594b;
+    --primary: #f4623a;
+    --primary-hover: #c34e2e;
     --amber: #a7630b;
     --danger: #a93a35;
 }
@@ -473,8 +473,8 @@ body {
 
 .dialog-user {
     align-self: flex-end;
-    border-color: #9bcbbd;
-    background: #edf7f3;
+    border-color: #f9c4b4;
+    background: #fff0eb;
 }
 
 .message-author {
@@ -875,7 +875,7 @@ form[aria-busy="true"] {
 }
 
 .sidebar-link.active {
-    background: rgba(20, 108, 91, 0.1);
+    background: rgba(244, 98, 58, 0.1);
     color: var(--primary);
     font-weight: 600;
 }
@@ -917,4 +917,24 @@ form[aria-busy="true"] {
     .analysis-sidebar {
         display: none;
     }
+}
+
+/* Ранее отсутствовавшие классы */
+.source-details {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.source-details summary {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+}
+
+.insight-summary {
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 8px 0;
+    color: var(--ink);
 }
