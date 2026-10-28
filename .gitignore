@@ -136,8 +136,11 @@ node_modules/
 package.json
 package-lock.json
 
-# Локальный экспорт презентации в PDF (собирается decktape, не для VCS)
+# Локальный экспорт презентации (собирается decktape + make_pptx.py, не для VCS)
 docs/presentation.pdf
+docs/presentation_slides.pptx
+docs/slides_png/
+docs/make_pptx.py
 
 # Кеш локальных embedding-моделей (создаётся при EMBEDDING_PROVIDER=sentence_transformers)
 HH/.model-cache/

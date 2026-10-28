@@ -27,48 +27,50 @@
             <div class="col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h2 class="card-title mb-3">{{ object.vac_name }}</h2>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-building me-1" aria-hidden="true"></i>Работодатель
+                            </dt>
+                            <dd class="col-sm-8">{{ object.employer.employer_name }}</dd>
 
-                        <div class="mb-3">
-                            <h5 class="text-muted mb-2">
-                                <i class="bi bi-building me-2"></i>Работодатель
-                            </h5>
-                            <p class="mb-0">{{ object.employer.employer_name }}</p>
-                        </div>
+                            {% if object.salaryFrom %}
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-cash me-1" aria-hidden="true"></i>Зарплата
+                            </dt>
+                            <dd class="col-sm-8">от {{ object.salaryFrom }} ₽</dd>
+                            {% endif %}
 
-                        {% if object.salaryFrom %}
-                        <div class="mb-3">
-                            <h5 class="text-muted mb-2">
-                                <i class="bi bi-cash me-2"></i>Зарплата
-                            </h5>
-                            <p class="mb-0">от {{ object.salaryFrom }} ₽</p>
-                        </div>
-                        {% endif %}
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Опубликовано
+                            </dt>
+                            <dd class="col-sm-8">
+                                <time datetime="{{ object.published|date:'Y-m-d' }}">
+                                    {{ object.published|date:"d.m.Y H:i" }}
+                                </time>
+                            </dd>
 
-                        <div class="mb-3">
-                            <h5 class="text-muted mb-2">
-                                <i class="bi bi-calendar-event me-2"></i>Опубликовано
-                            </h5>
-                            <p class="mb-0">{{ object.published|date:"d.m.Y H:i" }}</p>
-                        </div>
-
-                        {% if object.url_vac %}
-                        <div class="mb-3">
-                            <h5 class="text-muted mb-2">
-                                <i class="bi bi-link-45deg me-2"></i>Ссылка
-                            </h5>
-                            <a href="{{ object.url_vac }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
-                                Открыть на HH.ru
-                            </a>
-                        </div>
-                        {% endif %}
+                            {% if object.url_vac %}
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Ссылка
+                            </dt>
+                            <dd class="col-sm-8">
+                                <a href="{{ object.url_vac }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="btn btn-outline-primary btn-sm"
+                                   aria-label="Открыть вакансию на HH.ru (откроется в новой вкладке)">
+                                    Открыть на HH.ru
+                                    <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i>
+                                </a>
+                            </dd>
+                            {% endif %}
+                        </dl>
 
                         {% if object.description %}
-                        <div class="mt-4">
-                            <h5 class="text-muted mb-2">Описание</h5>
-                            <div class="vacancy-description">
-                                {{ object.description|linebreaks }}
-                            </div>
+                        <hr class="my-4">
+                        <h2 class="h5 text-muted mb-3">Описание</h2>
+                        <div class="vacancy-description">
+                            {{ object.description|linebreaks }}
                         </div>
                         {% endif %}
                     </div>
@@ -76,7 +78,7 @@
 
                 <div class="text-center mt-4">
                     <a href="{% url 'hhapp:index' %}" class="btn btn-light btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>Назад к списку
+                        <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Назад к списку
                     </a>
                 </div>
             </div>

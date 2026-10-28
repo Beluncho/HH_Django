@@ -72,15 +72,15 @@
                 <h2 class="text-center mt-0">Результаты для «{{ search_query }}»</h2>
             {% endif %}
 
-            <h3 class="text-center mt-5">Вакансии в приложении</h3>
+            <h2 class="text-center mt-5">Вакансии в приложении</h2>
             <p class="text-center text-muted">На странице: {{ vacancies|length }}</p>
             {% for item in vacancies %}
             <div class="container px-4 px-lg-5">
                 <hr class="divider" />
-                <h2 class="text-center mt-0">
+                <h3 class="text-center mt-0">
                     {{ item.vac_name }}
                     <span class="badge badge-internal ms-2">Внутренняя</span>
-                </h2>
+                </h3>
                 <p class="text-center text-muted">{{ item.employer.employer_name }}</p>
             </div>
             <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' pk=item.pk %}">Vacancy</a>
@@ -93,7 +93,7 @@
 
             {% if search_query %}
                 <hr class="my-5"/>
-                <h3 class="text-center">Вакансии HH.ru</h3>
+                <h2 class="text-center">Вакансии HH.ru</h2>
 
                 {% if hh_error %}
                     <p class="text-center text-danger">{{ hh_error }}</p>
@@ -101,10 +101,10 @@
                     {% for item in hh_vacancies %}
                         <div class="container px-4 px-lg-5">
                             <hr class="divider" />
-                            <h2 class="text-center mt-0">
+                            <h3 class="text-center mt-0">
                                 {{ item.name }}
                                 <span class="badge badge-hh ms-2">HH.ru</span>
-                            </h2>
+                            </h3>
                             <p class="text-center text-muted">{{ item.employer }}</p>
                             <p class="text-center">
                                 {% if item.salary_from or item.salary_to %}
@@ -129,24 +129,32 @@
             {% endif %}
 
             <hr/>
-            <h1 class="text-center mt-0">Create new vacancy</h1>
-            <a class="btn btn-light btn-xl form-control" id="vacancy_create" href="{% url 'hhapp:vacancy_create' %}">Create vacancy</a>
+            <div class="text-center" id="vacancy_create">
+                <h3 class="mt-0">Создать вакансию</h3>
+                <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy_create' %}">
+                    <i class="bi bi-plus-circle me-2"></i>Создать вакансию
+                </a>
+            </div>
             <hr/>
-            <h1 class="text-center mt-0">Watch all employers</h1>
-            <a class="btn btn-light btn-xl form-control" id="employers" href="{% url 'hhapp:employers_list' %}">Employers</a>
+            <div class="text-center" id="employers">
+                <h3 class="mt-0">Все работодатели</h3>
+                <a class="btn btn-light btn-xl" href="{% url 'hhapp:employers_list' %}">
+                    <i class="bi bi-building me-2"></i>Работодатели
+                </a>
+            </div>
         </section>
 {% endblock %}
 
 {% block section_contact %}
+{% load form_tags %}
 <section class="page-section" id="contact">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6">
-                <h2 class="text-center mb-4">Contact</h2>
+                <h2 class="text-center mb-4">Обратная связь</h2>
                 <form method="post" id="contactForm">
                     {% csrf_token %}
-                    {{ form.as_p }}
-                    <button class="btn btn-primary btn-lg w-100" id="submitButton" type="submit">Отправить</button>
+                    {% render_form form submit_text="Отправить" submit_class="btn btn-primary btn-lg w-100" %}
                 </form>
             </div>
         </div>
