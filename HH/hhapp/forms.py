@@ -5,11 +5,23 @@ from hhapp.models import Vacancies
 
 
 class ContactForm(Form):
-    name = CharField( widget=TextInput(attrs={'placeholder': 'Name', 'class': 'form-control'}))
-    email = EmailField(widget=TextInput(attrs={'placeholder': 'You email', 'class': 'form-control'}))
-    phone_number = CharField(widget=NumberInput(attrs={'placeholder': 'You phone number',
-                                                       'class': 'form-control'}))
-    message = CharField(widget=Textarea(attrs={'placeholder': 'You message', 'class': 'form-control'}))
+    name = CharField(
+        label='Имя',
+        max_length=100
+    )
+    email = EmailField(
+        label='Email',
+        help_text='Мы не передаём ваш email третьим лицам'
+    )
+    phone_number = CharField(
+        label='Номер телефона',
+        max_length=20,
+        help_text='В формате +7 (XXX) XXX-XX-XX'
+    )
+    message = CharField(
+        label='Сообщение',
+        widget=Textarea(attrs={'rows': 4})
+    )
 
     def send_email(self):
         name = self.cleaned_data['name']
@@ -25,13 +37,18 @@ class ContactForm(Form):
 
 
 class VacanciesEmployerForm(ModelForm):
-    vac_name = CharField(widget=TextInput(attrs={'placeholder': 'Vacancy', 'class': 'form-control'}))
-    url_vac = URLField(widget=TextInput(attrs={'placeholder': 'URL', 'class': 'form-control'}))
-    salaryFrom = IntegerField(widget=NumberInput(attrs={'placeholder': 'Salary From', 'class': 'form-control'}) )
-
     class Meta:
         model = Vacancies
         fields = ('vac_name', 'url_vac', 'salaryFrom')
+        labels = {
+            'vac_name': 'Название вакансии',
+            'url_vac': 'URL вакансии',
+            'salaryFrom': 'Зарплата от',
+        }
+        help_texts = {
+            'url_vac': 'Ссылка на страницу вакансии (например, на HH.ru)',
+            'salaryFrom': 'Минимальная зарплата в рублях',
+        }
 
 
 

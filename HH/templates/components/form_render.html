@@ -1,0 +1,22 @@
+{% comment %}
+Компонент для рендеринга всей формы с Bootstrap 5
+Используется через тег {% render_form form %}
+{% endcomment %}
+
+{% load form_tags %}
+
+{% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+            {{ error }}
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% for field in form %}
+    {% render_field field %}
+{% endfor %}
+
+<div class="d-grid gap-2">
+    <button type="submit" class="{{ submit_class }}">{{ submit_text }}</button>
+</div>
