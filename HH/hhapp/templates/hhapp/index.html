@@ -77,7 +77,10 @@
             {% for item in vacancies %}
             <div class="container px-4 px-lg-5">
                 <hr class="divider" />
-                <h2 class="text-center mt-0">{{ item.vac_name }}</h2>
+                <h2 class="text-center mt-0">
+                    {{ item.vac_name }}
+                    <span class="badge badge-internal ms-2">Внутренняя</span>
+                </h2>
                 <p class="text-center text-muted">{{ item.employer.employer_name }}</p>
             </div>
             <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' pk=item.pk %}">Vacancy</a>
@@ -98,7 +101,10 @@
                     {% for item in hh_vacancies %}
                         <div class="container px-4 px-lg-5">
                             <hr class="divider" />
-                            <h2 class="text-center mt-0">{{ item.name }}</h2>
+                            <h2 class="text-center mt-0">
+                                {{ item.name }}
+                                <span class="badge badge-hh ms-2">HH.ru</span>
+                            </h2>
                             <p class="text-center text-muted">{{ item.employer }}</p>
                             <p class="text-center">
                                 {% if item.salary_from or item.salary_to %}
@@ -133,13 +139,17 @@
 
 {% block section_contact %}
 <section class="page-section" id="contact">
-
-    <form method="post" id="contactForm" >
-        {% csrf_token %}
-        {{ form.as_p }}
-
-        <button class="btn-primary btn-light btn-xl" id="submitButton" type="submit">send</button>
-
-    </form>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <h2 class="text-center mb-4">Contact</h2>
+                <form method="post" id="contactForm">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button class="btn btn-primary btn-lg w-100" id="submitButton" type="submit">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </section>
 {% endblock %}
