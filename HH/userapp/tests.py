@@ -10,8 +10,8 @@ class WebSiteUserTestCaseMixer(TestCase):
     def setUp(self):
         self.user = mixer.blend(WebSiteUser)
 
-    def test_has_foto(self):
-        self.assertFalse(self.user.has_foto())
+    def test_has_photo(self):
+        self.assertFalse(self.user.has_photo())
 
 class ProfileTestCase(TestCase):
     def setUp(self):

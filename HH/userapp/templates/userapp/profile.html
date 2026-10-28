@@ -1,62 +1,133 @@
 {% extends "base.html" %}
 {% load static %}
+{% load form_tags %}
+
+{% block navigation %}
+<li class="nav-item"><a class="nav-link" href="{% url 'hhapp:index' %}">Главная</a></li>
+{% endblock %}
 
 {% block section_services %}
-        <section class="page-section" id="services">{% if user.id == object.id%}
-                {% if user.foto %}
-                <img class = "mt-0" src="{{user.foto.url}}" width="300">
-            {% endif %}
-                <h2 class="text-center mt-0">Profile: {{user.username}}</h2>
+<section class="page-section" id="services">
+    <div class="container px-4 px-lg-5">
+        <h2 class="text-center mb-5">Профиль: {{ user.username }}</h2>
 
-                <h2 class="text-center mt-0">Info:{{ object.info }}</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
 
-                <h2 class="text-center mt-0">{{ user.email }}</h2>
-                <h2 class="text-center mt-0">Employer: {{ user.is_employer }}</h2>
-
-            <p></p>
-            <hr>
-
-
-            <div class="text-black col-lg-3 col-md-6 text-center post-form">
-                Token:
-                <div id="token">{% if user.auth_token %}
-                                {{user.auth_token}}
-                                {% else %}не созда
-                            <form action="{% url 'user:create_token' %}">
-                                    <button type="submit" class="btn btn-primary">Create token</button>
-                            </form>
-                                {% endif %}
+                <!-- Секция: Аватар -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body text-center">
+                        {% if user.photo %}
+                            <img src="{{ user.photo.url }}"
+                                 alt="{{ user.username }} аватар"
+                                 class="rounded-circle mb-3"
+                                 style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3"
+                                 style="width: 200px; height: 200px;">
+                                <span class="text-white display-1">{{ user.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <h4 class="mb-0">{{ user.username }}</h4>
+                    </div>
                 </div>
-                <p></p>
 
-                <p></p>
+                <!-- Секция: Информация -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-info-circle me-2"></i>Информация
+                        </h5>
 
-                <button type="button" id="ajax-btn" class="btn btn-info">Refresh token ajax</button>
+                        <div class="mb-3">
+                            <strong>Email:</strong> {{ user.email }}
+                        </div>
 
-                <p></p>
+                        <div class="mb-3">
+                            <strong>Работодатель:</strong>
+                            {% if user.is_employer %}
+                                <span class="badge bg-success">Да</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Нет</span>
+                            {% endif %}
+                        </div>
 
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.as_p }}
+                        {% if object.info %}
+                        <div>
+                            <strong>Дополнительно:</strong>
+                            <p class="mb-0 mt-2">{{ object.info }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-                    <button class="btn-primary btn-light btn-xl"
-                             type="submit" >add info</button>
-                    </form>
+                <!-- Секция: API Token -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-key me-2"></i>API Token
+                        </h5>
 
+                        {% if user.auth_token %}
+                            <div class="input-group mb-3">
+                                <input type="text"
+                                       class="form-control"
+                                       value="{{ user.auth_token }}"
+                                       id="apiToken"
+                                       readonly>
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        id="copy-token-btn">
+                                    <i class="bi bi-clipboard me-1"></i>Копировать
+                                </button>
+                            </div>
+                            <button type="button" id="ajax-btn" class="btn btn-warning">
+                                <i class="bi bi-arrow-repeat me-1"></i>Обновить токен
+                            </button>
+                            <small class="form-text text-muted d-block mt-2" id="token">
+                                Токен для доступа к API
+                            </small>
+                        {% else %}
+                            <p class="text-muted">Токен ещё не создан</p>
+                            <form action="{% url 'user:create_token' %}" method="get">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Создать токен
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Секция: Редактирование -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="bi bi-pencil me-2"></i>Редактировать информацию
+                        </h5>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            {% render_form form submit_text="Сохранить" submit_class="btn btn-primary" %}
+                        </form>
+                    </div>
+                </div>
 
             </div>
-            {% endif %}
-        </section>
-
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block section_contact %}
 <section class="page-section" id="contact">
-    <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">Home</a>
+    <div class="text-center">
+        <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">
+            <i class="bi bi-house me-2"></i>На главную
+        </a>
+    </div>
 </section>
 {% endblock %}
 
 {% block script %}
-<script src="{% static 'jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/my.js' %}"></script>
 {% endblock %}

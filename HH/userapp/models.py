@@ -5,10 +5,10 @@ from django.db import models
 class WebSiteUser(AbstractUser):
     email = models.EmailField(unique=True)
     is_employer = models.BooleanField(default=False)
-    foto = models.ImageField(upload_to='users', null=True, blank=True)
+    photo = models.ImageField(upload_to='users', null=True, blank=True)
 
-    def has_foto(self):
-        return bool(self.foto)
+    def has_photo(self):
+        return bool(self.photo)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
