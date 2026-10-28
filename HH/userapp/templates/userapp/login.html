@@ -8,15 +8,16 @@
                     <div class="col-lg-8 align-self-end">
                         <h1 class="text-white font-weight-bold">LogIn</h1>
                         <hr class="divider" />
-
-                        <div class="text-white col-lg-6 col-md-6 text-center post-form">
-                            <form method="post">{% csrf_token %}
-
-                                {{ form.as_p }}
-
-                            <button class="btn-primary btn-light btn-xl"
-                                    id="submitButton" type="submit">Enter</button>
-                            </form>
+                    </div>
+                    <div class="col-lg-6 col-md-8 align-self-baseline">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <form method="post">{% csrf_token %}
+                                    {{ form.as_p }}
+                                    <button class="btn btn-primary btn-lg w-100"
+                                            id="submitButton" type="submit">Enter</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

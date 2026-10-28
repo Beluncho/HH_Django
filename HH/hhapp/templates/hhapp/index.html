@@ -86,23 +86,56 @@
             {% endfor %}
             <!-- Paginate-->
             {% if page_obj.paginator.num_pages > 1 %}
-            <div class="pagination justify-content-center mt-4">
-                <span class="step-links">
+            <nav aria-label="Навигация по страницам" class="mt-4">
+                <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
-                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page=1">&laquo; first</a>
-                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">previous</a>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page=1" aria-label="Первая">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Предыдущая">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;&laquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
                     {% endif %}
 
-                    <span class="current">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                    </span>
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">
+                            {{ page_obj.number }} <span class="visually-hidden">(текущая)</span>
+                        </span>
+                    </li>
 
                     {% if page_obj.has_next %}
-                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">next</a>
-                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Следующая">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Последняя">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;&raquo;</span>
+                        </li>
                     {% endif %}
-                </span>
-            </div>
+                </ul>
+                <p class="text-center text-muted small">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</p>
+            </nav>
             {% endif %}
 
             {% if search_query %}
