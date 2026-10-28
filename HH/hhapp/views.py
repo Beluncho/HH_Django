@@ -79,6 +79,15 @@ class VacDetailView(DetailView,RemoveDuplicContextMixin):
     model = Vacancies
     template_name = 'hhapp/vacancy.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb_items'] = [
+            {'title': 'Главная', 'url': reverse('hhapp:index')},
+            {'title': 'Вакансии', 'url': reverse('hhapp:index')},
+            {'title': self.object.vac_name},
+        ]
+        return context
+
 
 class FormPostValidMixin(FormMixin):
 
@@ -109,6 +118,14 @@ class EmployersListView(ListView):
     def get_queryset(self):
         return Employer.objects.all().order_by('id')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb_items'] = [
+            {'title': 'Главная', 'url': reverse('hhapp:index')},
+            {'title': 'Работодатели'},
+        ]
+        return context
+
 class EmployerDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView,RemoveDuplicContextMixin):
     model = Employer
     template_name = 'hhapp/employer_detail.html'
@@ -116,6 +133,11 @@ class EmployerDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView,Remov
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = VacanciesEmployerForm()
+        context['breadcrumb_items'] = [
+            {'title': 'Главная', 'url': reverse('hhapp:index')},
+            {'title': 'Работодатели', 'url': reverse('hhapp:employers_list')},
+            {'title': self.object.employer_name},
+        ]
         return context
 
     def test_func(self):

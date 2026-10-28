@@ -1,54 +1,68 @@
 {% extends "base.html" %}
 
+{% block navigation %}
+<li class="nav-item"><a class="nav-link" href="{% url 'hhapp:index' %}">Главная</a></li>
+{% endblock %}
+
 {% block section_services %}
-        <section class="page-section" id="services">
+<section class="page-section" id="services">
+    <div class="container px-4 px-lg-5">
+        <!-- Breadcrumbs -->
+        {% include 'components/breadcrumbs.html' with items=breadcrumb_items %}
+
+        <h2 class="text-center mb-5">Работодатели</h2>
+
+        <div class="row">
             {% for item in employers %}
-            <div class="container px-4 px-lg-5">
-                <hr class="divider" />
-
-                <a class="text-center mt-0" href="{% url 'hhapp:employer_detail' pk=item.pk %}"
-                >{{ item.employer_name }}</a>
-
-                <a class="btn btn-light btn-xl form-control"
-               href="{% url 'hhapp:employer_update' pk=item.pk %}">Change employer
-                </a>
-                <a class="btn btn-light btn-xl form-control"
-               href="{% url 'hhapp:employer_delete' pk=item.pk %}">Delete employer
-                </a>
-
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-sm card-hover h-100">
+                    <div class="card-body">
+                        <h3 class="card-title h5">
+                            <a href="{% url 'hhapp:employer_detail' pk=item.pk %}" class="text-decoration-none">
+                                {{ item.employer_name }}
+                            </a>
+                        </h3>
+                        <div class="mt-3">
+                            <a class="btn btn-outline-primary btn-sm me-2"
+                               href="{% url 'hhapp:employer_update' pk=item.pk %}">
+                                <i class="bi bi-pencil me-1"></i>Изменить
+                            </a>
+                            <a class="btn btn-outline-danger btn-sm"
+                               href="{% url 'hhapp:employer_delete' pk=item.pk %}">
+                                <i class="bi bi-trash me-1"></i>Удалить
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Нет работодателей</p>
+            </div>
             {% endfor %}
+        </div>
 
-            <div class="pagination">
-                <span class="step-links">
-                    {% if page_obj.has_previous %}
-                        <a href="?page=1">&laquo; first</a>
-                        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                    {% endif %}
+        <!-- Pagination -->
+        {% include 'components/pagination.html' with page_obj=page_obj %}
 
-                    <span class="current">
-                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                    </span>
+        <hr class="my-5"/>
 
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}">next</a>
-                        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                    {% endif %}
-                </span>
-            </div>
-
-            <hr class="divider divider-light "/>
-            <h1 class="text-black font-weight-bold">Create employer</h1>
-            <a class="btn btn-light btn-xl form-control"
-               href="{% url 'hhapp:employer_create' %}">Create employer
+        <div class="text-center">
+            <h3 class="mb-3">Создать работодателя</h3>
+            <a class="btn btn-primary btn-lg" href="{% url 'hhapp:employer_create' %}">
+                <i class="bi bi-plus-circle me-2"></i>Создать работодателя
             </a>
-        </section>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block section_contact %}
 <section class="page-section" id="contact">
-    <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">Home page</a>
+    <div class="text-center">
+        <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">
+            <i class="bi bi-house me-2"></i>На главную
+        </a>
+    </div>
 </section>
 {% endblock %}
-

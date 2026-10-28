@@ -1,32 +1,68 @@
 {% extends "base.html" %}
+{% load form_tags %}
+
+{% block navigation %}
+<li class="nav-item"><a class="nav-link" href="{% url 'hhapp:index' %}">Главная</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'hhapp:employers_list' %}">Работодатели</a></li>
+{% endblock %}
 
 {% block section_services %}
-        <section class="page-section" id="services">
+<section class="page-section" id="services">
+    <div class="container px-4 px-lg-5">
+        <!-- Breadcrumbs -->
+        {% include 'components/breadcrumbs.html' with items=breadcrumb_items %}
 
-                <h2 class="text-center mt-0">{{object.employer_name}}</h2>
-            {% for vacancy in object.employer_vacancies.all %}
-                {{ vacancy.vac_name }}
-            <p></p>
-            <hr>
-            {% endfor %}
+        <h2 class="text-center mb-5">{{ object.employer_name }}</h2>
 
-            <div class="text-white col-lg-3 col-md-6 text-center post-form">
-                    <form method="post"  action="{% url 'hhapp:employer_vacancy_create' pk=object.pk %}">
-                        {% csrf_token %}
-                        {{ form.as_p }}
-
-                    <button class="btn-primary btn-light btn-xl"
-                            id="submitButton" type="submit">send</button>
-                    </form>
+        <!-- Список вакансий работодателя -->
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="mb-4">Вакансии</h3>
+                {% if object.employer_vacancies.all %}
+                    <div class="list-group">
+                        {% for vacancy in object.employer_vacancies.all %}
+                        <a href="{% url 'hhapp:vacancy' pk=vacancy.pk %}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ vacancy.vac_name }}</h5>
+                                {% if vacancy.salaryFrom %}
+                                <small class="text-muted">от {{ vacancy.salaryFrom }} ₽</small>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">{{ vacancy.published|date:"d.m.Y" }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">У этого работодателя пока нет вакансий</p>
+                {% endif %}
             </div>
+        </div>
 
-        </section>
-
+        <!-- Форма создания вакансии -->
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Добавить вакансию</h4>
+                        <form method="post" action="{% url 'hhapp:employer_vacancy_create' pk=object.pk %}">
+                            {% csrf_token %}
+                            {% render_form form submit_text="Создать вакансию" submit_class="btn btn-primary w-100" %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block section_contact %}
 <section class="page-section" id="contact">
-    <a class="btn btn-light btn-xl" href="{% url 'hhapp:employers_list' %}">Employers</a>
+    <div class="text-center">
+        <a class="btn btn-light btn-xl" href="{% url 'hhapp:employers_list' %}">
+            <i class="bi bi-arrow-left me-2"></i>К списку работодателей
+        </a>
+    </div>
 </section>
 {% endblock %}
-
