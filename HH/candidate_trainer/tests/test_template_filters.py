@@ -56,7 +56,7 @@ class RenderMarkdownFilterTestCase(SimpleTestCase):
     def test_code_block(self):
         """Блок кода рендерится в <code> и <pre>."""
         result = render_markdown("```python\nprint('hello')\n```")
-        self.assertIn("<code>", result)
+        self.assertIn("<code", result)  # fenced_code генерирует <code class="language-python">
         self.assertIn("print('hello')", result)
         self.assertNotIn("```", result)
 
@@ -111,5 +111,5 @@ def hello():
         self.assertIn("<li>Простой синтаксис</li>", result)
         self.assertIn("<ol>", result)
         self.assertIn("<li>Web-разработка</li>", result)
-        self.assertIn("<code>", result)
+        self.assertIn("<code", result)  # fenced_code генерирует <code class="language-...">
         self.assertIn("def hello():", result)

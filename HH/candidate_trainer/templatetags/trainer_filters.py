@@ -16,23 +16,13 @@ def render_markdown(text):
     Использует расширения:
     - fenced_code: блоки кода с ```
     - tables: таблицы
-    - nl2br: переводы строк как <br>
+    - nl2br: переводы строк как <br> для обычного текста
 
-    Предварительно очищает markdown маркеры списков для корректного рендеринга.
+    nl2br и списки совместимы — Python-markdown корректно рендерит
+    маркированные списки в <ul><li> при наличии nl2br.
     """
     if not text:
         return ""
-
-    # Удаляем markdown маркеры списков ДО рендеринга
-    # Паттерн: строки начинающиеся с * - + (с опциональными пробелами)
-    # Заменяем на просто текст без маркера
-    lines = text.split('\n')
-    cleaned_lines = []
-    for line in lines:
-        # Удаляем маркеры в начале строки (после опциональных пробелов)
-        cleaned = re.sub(r'^(\s*)[\*\-\+]\s+', r'\1', line)
-        cleaned_lines.append(cleaned)
-    cleaned_text = '\n'.join(cleaned_lines)
 
     md = markdown.Markdown(
         extensions=[
@@ -42,7 +32,7 @@ def render_markdown(text):
         ],
         output_format="html5",
     )
-    html = md.convert(cleaned_text)
+    html = md.convert(text)
 
     return mark_safe(html)
 

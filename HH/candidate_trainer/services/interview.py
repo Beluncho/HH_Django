@@ -86,7 +86,7 @@ def explain_skill(
         )
     return SkillExplanation.objects.create(
         user=user,
-        analysis_skill=analysis_skill,
+        skill=analysis_skill.skill,
         content=response.text,
         sources=[context.as_source() for context in contexts],
         llm_provider=response.provider,
