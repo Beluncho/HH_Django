@@ -34,7 +34,11 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted text-center">У этого работодателя пока нет вакансий</p>
+                    <div class="text-center py-4">
+                        <i class="bi bi-briefcase display-4 text-muted mb-3 d-block" aria-hidden="true"></i>
+                        <p class="text-muted">У этого работодателя пока нет вакансий</p>
+                        <p class="small text-muted">Создайте первую вакансию с помощью формы ниже</p>
+                    </div>
                 {% endif %}
             </div>
         </div>

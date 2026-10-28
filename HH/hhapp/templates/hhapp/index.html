@@ -85,7 +85,15 @@
             </div>
             <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' pk=item.pk %}">Vacancy</a>
             {% empty %}
-                <p class="text-center text-muted">В приложении подходящих вакансий нет.</p>
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted mb-3" aria-hidden="true"></i>
+                    <p class="text-muted">В приложении подходящих вакансий нет.</p>
+                    {% if not search_query %}
+                    <a href="{% url 'hhapp:vacancy_create' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Создать первую вакансию
+                    </a>
+                    {% endif %}
+                </div>
             {% endfor %}
 
             <!-- Pagination -->
@@ -123,7 +131,11 @@
                             </div>
                         </div>
                     {% empty %}
-                        <p class="text-center text-muted">На HH.ru подходящих вакансий не найдено.</p>
+                        <div class="text-center py-5">
+                            <i class="bi bi-search display-1 text-muted mb-3" aria-hidden="true"></i>
+                            <p class="text-muted">На HH.ru подходящих вакансий не найдено.</p>
+                            <p class="small text-muted">Попробуйте изменить запрос или проверьте позже</p>
+                        </div>
                     {% endfor %}
                 {% endif %}
             {% endif %}

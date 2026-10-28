@@ -36,8 +36,14 @@
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center">
-                <p class="text-muted">Нет работодателей</p>
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="bi bi-building display-1 text-muted mb-3" aria-hidden="true"></i>
+                    <p class="text-muted h5 mb-3">Нет работодателей</p>
+                    <a href="{% url 'hhapp:employer_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Создать первого работодателя
+                    </a>
+                </div>
             </div>
             {% endfor %}
         </div>
