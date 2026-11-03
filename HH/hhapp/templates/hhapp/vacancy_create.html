@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+<<<<<<< HEAD
+=======
+{% load form_tags %}
+>>>>>>> AI_Agents_diploma
 
 {% block header %}
         <!-- Masthead-->
@@ -8,6 +12,7 @@
                     <div class="col-lg-8 align-self-end">
                         <h1 class="text-white font-weight-bold">Create vacancy</h1>
                         <hr class="divider" />
+<<<<<<< HEAD
 
                         <div class="text-white col-lg-3 col-md-6 text-center post-form">
                             <form method="post">{% csrf_token %}
@@ -17,6 +22,17 @@
                             <button class="btn-primary btn-light btn-xl"
                                     id="submitButton" type="submit">send</button>
                             </form>
+=======
+                    </div>
+                    <div class="col-lg-6 col-md-8 align-self-baseline">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    {% render_form form submit_text="Создать вакансию" submit_class="btn btn-primary btn-lg w-100" %}
+                                </form>
+                            </div>
+>>>>>>> AI_Agents_diploma
                         </div>
                     </div>
                 </div>
@@ -28,4 +44,8 @@
 <section class="page-section" id="contact">
     <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">Home page</a>
 </section>
+<<<<<<< HEAD
 {% endblock %}
+=======
+{% endblock %}
+>>>>>>> AI_Agents_diploma

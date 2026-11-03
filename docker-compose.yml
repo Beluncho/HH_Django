@@ -8,6 +8,10 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./HH:/app
+<<<<<<< HEAD
+=======
+      - model_cache:/app/.model-cache
+>>>>>>> AI_Agents_diploma
     ports:
       - "8000:8000"
     env_file:
@@ -30,3 +34,7 @@ services:
 
 volumes:
   postgres_volume:
+<<<<<<< HEAD
+=======
+  model_cache:
+>>>>>>> AI_Agents_diploma

@@ -1,0 +1,22 @@
+{% comment %}
+Компонент breadcrumbs навигации
+Использование: {% include 'components/breadcrumbs.html' with items=breadcrumb_items %}
+где items - список словарей: [{'title': 'Главная', 'url': '/'}, {'title': 'Вакансии'}]
+Последний элемент без url - текущая страница
+{% endcomment %}
+
+{% if items %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        {% for item in items %}
+            {% if forloop.last %}
+                <li class="breadcrumb-item active" aria-current="page">{{ item.title }}</li>
+            {% else %}
+                <li class="breadcrumb-item">
+                    <a href="{{ item.url }}">{{ item.title }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}

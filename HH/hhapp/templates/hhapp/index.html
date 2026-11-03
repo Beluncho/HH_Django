@@ -72,16 +72,28 @@
                 <h2 class="text-center mt-0">Результаты для «{{ search_query }}»</h2>
             {% endif %}
 
+<<<<<<< HEAD
             <h3 class="text-center mt-5">Вакансии в приложении</h3>
+=======
+            <h2 class="text-center mt-5">Вакансии в приложении</h2>
+>>>>>>> AI_Agents_diploma
             <p class="text-center text-muted">На странице: {{ vacancies|length }}</p>
             {% for item in vacancies %}
             <div class="container px-4 px-lg-5">
                 <hr class="divider" />
+<<<<<<< HEAD
                 <h2 class="text-center mt-0">{{ item.vac_name }}</h2>
+=======
+                <h3 class="text-center mt-0">
+                    {{ item.vac_name }}
+                    <span class="badge badge-internal ms-2">Внутренняя</span>
+                </h3>
+>>>>>>> AI_Agents_diploma
                 <p class="text-center text-muted">{{ item.employer.employer_name }}</p>
             </div>
             <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy' pk=item.pk %}">Vacancy</a>
             {% empty %}
+<<<<<<< HEAD
                 <p class="text-center text-muted">В приложении подходящих вакансий нет.</p>
             {% endfor %}
             <!-- Paginate-->
@@ -108,6 +120,25 @@
             {% if search_query %}
                 <hr class="my-5"/>
                 <h3 class="text-center">Вакансии HH.ru</h3>
+=======
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted mb-3" aria-hidden="true"></i>
+                    <p class="text-muted">В приложении подходящих вакансий нет.</p>
+                    {% if not search_query %}
+                    <a href="{% url 'hhapp:vacancy_create' %}" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Создать первую вакансию
+                    </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% include 'components/pagination.html' with page_obj=page_obj search_query=search_query %}
+
+            {% if search_query %}
+                <hr class="my-5"/>
+                <h2 class="text-center">Вакансии HH.ru</h2>
+>>>>>>> AI_Agents_diploma
 
                 {% if hh_error %}
                     <p class="text-center text-danger">{{ hh_error }}</p>
@@ -115,7 +146,14 @@
                     {% for item in hh_vacancies %}
                         <div class="container px-4 px-lg-5">
                             <hr class="divider" />
+<<<<<<< HEAD
                             <h2 class="text-center mt-0">{{ item.name }}</h2>
+=======
+                            <h3 class="text-center mt-0">
+                                {{ item.name }}
+                                <span class="badge badge-hh ms-2">HH.ru</span>
+                            </h3>
+>>>>>>> AI_Agents_diploma
                             <p class="text-center text-muted">{{ item.employer }}</p>
                             <p class="text-center">
                                 {% if item.salary_from or item.salary_to %}
@@ -134,21 +172,46 @@
                             </div>
                         </div>
                     {% empty %}
+<<<<<<< HEAD
                         <p class="text-center text-muted">На HH.ru подходящих вакансий не найдено.</p>
+=======
+                        <div class="text-center py-5">
+                            <i class="bi bi-search display-1 text-muted mb-3" aria-hidden="true"></i>
+                            <p class="text-muted">На HH.ru подходящих вакансий не найдено.</p>
+                            <p class="small text-muted">Попробуйте изменить запрос или проверьте позже</p>
+                        </div>
+>>>>>>> AI_Agents_diploma
                     {% endfor %}
                 {% endif %}
             {% endif %}
 
             <hr/>
+<<<<<<< HEAD
             <h1 class="text-center mt-0">Create new vacancy</h1>
             <a class="btn btn-light btn-xl form-control" id="vacancy_create" href="{% url 'hhapp:vacancy_create' %}">Create vacancy</a>
             <hr/>
             <h1 class="text-center mt-0">Watch all employers</h1>
             <a class="btn btn-light btn-xl form-control" id="employers" href="{% url 'hhapp:employers_list' %}">Employers</a>
+=======
+            <div class="text-center" id="vacancy_create">
+                <h3 class="mt-0">Создать вакансию</h3>
+                <a class="btn btn-light btn-xl" href="{% url 'hhapp:vacancy_create' %}">
+                    <i class="bi bi-plus-circle me-2"></i>Создать вакансию
+                </a>
+            </div>
+            <hr/>
+            <div class="text-center" id="employers">
+                <h3 class="mt-0">Все работодатели</h3>
+                <a class="btn btn-light btn-xl" href="{% url 'hhapp:employers_list' %}">
+                    <i class="bi bi-building me-2"></i>Работодатели
+                </a>
+            </div>
+>>>>>>> AI_Agents_diploma
         </section>
 {% endblock %}
 
 {% block section_contact %}
+<<<<<<< HEAD
 <section class="page-section" id="contact">
 
     <form method="post" id="contactForm" >
@@ -158,5 +221,20 @@
         <button class="btn-primary btn-light btn-xl" id="submitButton" type="submit">send</button>
 
     </form>
+=======
+{% load form_tags %}
+<section class="page-section" id="contact">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <h2 class="text-center mb-4">Обратная связь</h2>
+                <form method="post" id="contactForm">
+                    {% csrf_token %}
+                    {% render_form form submit_text="Отправить" submit_class="btn btn-primary btn-lg w-100" %}
+                </form>
+            </div>
+        </div>
+    </div>
+>>>>>>> AI_Agents_diploma
 </section>
 {% endblock %}

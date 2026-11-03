@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img"
+     aria-label="Три коллекции базы знаний: что наполняет каждую, кому она видна и что хранится у фрагмента"
+     font-family="Segoe UI, PT Sans, system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="rg-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8a6512"/>
+    </marker>
+  </defs>
+
+  <style>
+    .h   { font-size: 21px; font-weight: 650; fill: #0f2027; }
+    .t   { font-size: 17px; fill: #22333b; }
+    .m   { font-size: 15px; fill: #4d5c66; }
+    .mono{ font-family: "Cascadia Mono", Consolas, "Courier New", monospace; }
+    .g   { font-size: 14px; font-weight: 650; fill: #8a6512; }
+  </style>
+
+  <rect x="0" y="0" width="1200" height="430" fill="none"/>
+
+  <!-- Чем наполняется коллекция -->
+  <text class="g" x="20" y="20">ЧТО НАПОЛНЯЕТ</text>
+
+  <g>
+    <rect x="20" y="32" width="370" height="66" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="20" y="32" width="370" height="4" rx="2" fill="#ffd700"/>
+    <text class="h" x="40" y="62">HH.ru</text>
+    <text class="t" x="40" y="85">описания вакансий и key_skills</text>
+  </g>
+  <g>
+    <rect x="415" y="32" width="370" height="66" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="415" y="32" width="370" height="4" rx="2" fill="#ffd700"/>
+    <text class="h" x="435" y="62">Ручной импорт</text>
+    <text class="t" x="435" y="85">.txt, .md, .json — материалы и карточки</text>
+  </g>
+  <g>
+    <rect x="810" y="32" width="370" height="66" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="810" y="32" width="370" height="4" rx="2" fill="#ffd700"/>
+    <text class="h" x="830" y="62">Ответы интервью</text>
+    <text class="t" x="830" y="85">структурированный вывод по ответу</text>
+  </g>
+
+  <!-- Стрелки: источник → коллекция -->
+  <g stroke="#8a6512" stroke-width="2" marker-end="url(#rg-arrow)">
+    <line x1="205" y1="104" x2="205" y2="140"/>
+    <line x1="600" y1="104" x2="600" y2="140"/>
+    <line x1="995" y1="104" x2="995" y2="140"/>
+  </g>
+
+  <!-- Коллекции -->
+  <text class="g" x="20" y="163">КОЛЛЕКЦИЯ И КОМУ ВИДНА</text>
+
+  <g>
+    <rect x="20" y="175" width="370" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="20" y="175" width="370" height="4" rx="2" fill="#ffd700"/>
+    <text class="h mono" x="40" y="207" font-size="19">skill_core</text>
+    <text class="t" x="40" y="234">обязательна с первого рабочего этапа:</text>
+    <text class="t" x="40" y="256">поиск по содержательным фрагментам,</text>
+    <text class="t" x="40" y="278">а не по названиям «Python» и «Django»</text>
+    <text class="g" x="40" y="298">видна всем</text>
+  </g>
+  <g>
+    <rect x="415" y="175" width="370" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="415" y="175" width="370" height="4" rx="2" fill="#ffd700"/>
+    <text class="h mono" x="435" y="207" font-size="19">interview</text>
+    <text class="t" x="435" y="234">вопросы, эталонные ответы, рубрики,</text>
+    <text class="t" x="435" y="256">методические материалы</text>
+    <text class="t" x="435" y="278">выключена или пуста — интервью работает</text>
+    <text class="g" x="435" y="298">видна всем</text>
+  </g>
+  <g>
+    <rect x="810" y="175" width="370" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="810" y="175" width="370" height="4" rx="2" fill="#ffd700"/>
+    <text class="h mono" x="830" y="207" font-size="19">user_analytics</text>
+    <text class="t" x="830" y="234">создаётся отдельно на каждого человека,</text>
+    <text class="t" x="830" y="256">хранит связь «вопрос → ответ → навык»</text>
+    <text class="t" x="830" y="278">сырые ответы в общую базу не попадают</text>
+    <text class="g" x="830" y="298">видна только автору</text>
+  </g>
+
+  <!-- Происхождение фрагмента -->
+  <rect x="20" y="330" width="1160" height="80" rx="12" fill="#f7f9fb" stroke="#dde3e9"/>
+  <text class="h" x="40" y="358">Происхождение фрагмента сохраняется всегда</text>
+  <text class="t" x="40" y="382">URL или внешний ID  ·  название документа  ·  дата получения  ·  связанный навык</text>
+  <text class="m" x="40" y="402">Текст, помеченный как generated, нельзя выдать за проверенный внешний источник.</text>
+</svg>

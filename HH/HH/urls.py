@@ -29,6 +29,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('hhapp.urls', namespace='hhapp')),
     path('user/', include('userapp.urls', namespace= 'user')),
+<<<<<<< HEAD
+=======
+    path(
+        'trainer/',
+        include('candidate_trainer.urls', namespace='candidate_trainer'),
+    ),
+>>>>>>> AI_Agents_diploma
     path('api-auth/', include('rest_framework.urls')),
     path('api/v0/', include(router.urls))
 ]
@@ -44,4 +51,8 @@ if settings.DEBUG:
         # For django versions before 2.0:
         # url(r'^__debug__/', include(debug_toolbar.urls)),
 
+<<<<<<< HEAD
     ] + urlpatterns
+=======
+    ] + urlpatterns
+>>>>>>> AI_Agents_diploma

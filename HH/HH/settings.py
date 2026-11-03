@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'hhapp',
     'userapp',
+<<<<<<< HEAD
+=======
+    'candidate_trainer',
+>>>>>>> AI_Agents_diploma
     'rest_framework',
     'rest_framework.authtoken',
 
@@ -199,3 +203,69 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+<<<<<<< HEAD
+=======
+
+# Candidate trainer
+HH_API_DOMAIN = environ.get('HH_API_DOMAIN', 'https://api.hh.ru/')
+HH_ACCESS_TOKEN = environ.get('HH_ACCESS_TOKEN', '')
+HH_REQUIRE_ACCESS_TOKEN = environ.get(
+    'HH_REQUIRE_ACCESS_TOKEN',
+    '1',
+).lower() in {'1', 'true', 'yes'}
+HH_USER_AGENT = environ.get('HH_USER_AGENT', 'HH_Django/1.0')
+HH_REQUEST_TIMEOUT = float(environ.get('HH_REQUEST_TIMEOUT', '10'))
+HH_ANALYSIS_LIMIT = min(int(environ.get('HH_ANALYSIS_LIMIT', '20')), 20)
+HH_AREA_CHOICES = (
+    ('1', 'Москва'),
+    ('2', 'Санкт-Петербург'),
+    ('3', 'Екатеринбург'),
+    ('4', 'Новосибирск'),
+    ('66', 'Нижний Новгород'),
+    ('88', 'Казань'),
+    ('76', 'Ростов-на-Дону'),
+    ('104', 'Челябинск'),
+    ('99', 'Уфа'),
+    ('113', 'Россия'),
+)
+
+EMBEDDING_PROVIDER = environ.get(
+    'EMBEDDING_PROVIDER',
+    'sentence_transformers',
+)
+EMBEDDING_MODEL = environ.get(
+    'EMBEDDING_MODEL',
+    'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2',
+)
+EMBEDDING_DIMENSION = int(environ.get('EMBEDDING_DIMENSION', '384'))
+EMBEDDING_DEVICE = environ.get('EMBEDDING_DEVICE', 'cpu')
+EMBEDDING_CACHE_DIR = environ.get(
+    'EMBEDDING_CACHE_DIR',
+    str(BASE_DIR / '.model-cache'),
+)
+
+LLM_PROVIDER = environ.get('LLM_PROVIDER', 'disabled')
+LLM_MODEL = environ.get('LLM_MODEL', '')
+LLM_API_KEY = environ.get('LLM_API_KEY', '')
+# Empty means direct OpenAI access. OpenAI-compatible providers use their
+# base /v1 URL. LLM_API_URL remains a backwards-compatible alias.
+LLM_API_URL = environ.get('LLM_API_URL', '')
+LLM_BASE_URL = environ.get('LLM_BASE_URL', '').strip() or LLM_API_URL
+LLM_TIMEOUT = float(environ.get('LLM_TIMEOUT', '30'))
+LLM_MAX_TOKENS = int(environ.get('LLM_MAX_TOKENS', '1200'))
+# Имя параметра лимита в теле запроса. Прежние OpenAI-совместимые API принимают
+# max_tokens, новые модели OpenAI — только max_completion_tokens.
+LLM_MAX_TOKENS_PARAM = environ.get('LLM_MAX_TOKENS_PARAM', 'max_tokens')
+# Пустая строка означает «не отправлять temperature»: часть моделей принимает
+# только значение по умолчанию и отвечает 400 на любое явное.
+_llm_temperature = environ.get('LLM_TEMPERATURE', '0.2').strip()
+LLM_TEMPERATURE = float(_llm_temperature) if _llm_temperature else None
+
+INTERVIEW_RAG_ENABLED = environ.get(
+    'INTERVIEW_RAG_ENABLED',
+    '1',
+).lower() in {'1', 'true', 'yes'}
+KNOWLEDGE_IMPORT_MAX_BYTES = int(
+    environ.get('KNOWLEDGE_IMPORT_MAX_BYTES', str(2 * 1024 * 1024)),
+)
+>>>>>>> AI_Agents_diploma

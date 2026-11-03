@@ -5,10 +5,17 @@ from django.db import models
 class WebSiteUser(AbstractUser):
     email = models.EmailField(unique=True)
     is_employer = models.BooleanField(default=False)
+<<<<<<< HEAD
     foto = models.ImageField(upload_to='users', null=True, blank=True)
 
     def has_foto(self):
         return bool(self.foto)
+=======
+    photo = models.ImageField(upload_to='users', null=True, blank=True)
+
+    def has_photo(self):
+        return bool(self.photo)
+>>>>>>> AI_Agents_diploma
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

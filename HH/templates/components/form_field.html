@@ -1,0 +1,50 @@
+{% comment %}
+Компонент для рендеринга одного поля формы с Bootstrap 5
+Используется через тег {% render_field field %}
+{% endcomment %}
+
+{% if is_checkbox or is_radio %}
+    <div class="form-check mb-3">
+        {{ field }}
+        {% if show_label %}
+            <label class="form-check-label" for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+        {% endif %}
+        {% if field.help_text %}
+            <small id="{{ field.id_for_label }}_help" class="form-text text-muted d-block">
+                {{ field.help_text|safe }}
+            </small>
+        {% endif %}
+        {% if field.errors %}
+            <div id="{{ field.id_for_label }}_errors" class="invalid-feedback d-block">
+                {% for error in field.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="mb-3">
+        {% if show_label %}
+            <label for="{{ field.id_for_label }}" class="form-label">
+                {{ field.label }}
+                {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+        {% endif %}
+        {{ field }}
+        {% if field.help_text %}
+            <small id="{{ field.id_for_label }}_help" class="form-text text-muted">
+                {{ field.help_text|safe }}
+            </small>
+        {% endif %}
+        {% if field.errors %}
+            <div id="{{ field.id_for_label }}_errors" class="invalid-feedback">
+                {% for error in field.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

@@ -10,8 +10,13 @@ class WebSiteUserTestCaseMixer(TestCase):
     def setUp(self):
         self.user = mixer.blend(WebSiteUser)
 
+<<<<<<< HEAD
     def test_has_foto(self):
         self.assertFalse(self.user.has_foto())
+=======
+    def test_has_photo(self):
+        self.assertFalse(self.user.has_photo())
+>>>>>>> AI_Agents_diploma
 
 class ProfileTestCase(TestCase):
     def setUp(self):

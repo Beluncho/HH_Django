@@ -1,0 +1,276 @@
+{% extends "candidate_trainer/base.html" %}
+{% load trainer_filters %}
+
+{% block title %}{{ analysis.query }} — анализ{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-row">
+    <a href="{% url 'candidate_trainer:dashboard' %}">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Все анализы
+    </a>
+</div>
+
+<div class="analysis-layout">
+    <!-- Sticky Sidebar -->
+    <aside class="analysis-sidebar">
+        <nav class="sidebar-nav" aria-label="Навигация по странице">
+            <h3 class="sidebar-title">На странице</h3>
+            <ul class="sidebar-menu">
+                <li><a href="#overview" class="sidebar-link">Обзор</a></li>
+                {% if analysis.status == "completed" and analysis_skills %}
+                <li>
+                    <a href="#skills" class="sidebar-link">
+                        Навыки
+                        <span class="sidebar-badge">{{ analysis_skills|length }}</span>
+                    </a>
+                </li>
+                {% if active_sessions %}
+                <li>
+                    <a href="#interviews" class="sidebar-link">
+                        Собеседования
+                        <span class="sidebar-badge">{{ active_sessions|length }}</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% for item in analysis_skills %}
+                {% if item.global_explanation %}
+                <li>
+                    <a href="#skill-{{ item.skill.id }}" class="sidebar-link sidebar-link-explanation">
+                        {{ item.skill.canonical_name }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                <li><a href="#vacancies" class="sidebar-link">Вакансии</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="analysis-content">
+        <div id="overview" class="scroll-target"></div>
+        <div class="page-heading analysis-heading">
+            <div>
+                <h1>{{ analysis.query }}</h1>
+                <p>{{ analysis.area_name }} · создан {{ analysis.created_at|date:"d.m.Y H:i" }}</p>
+            </div>
+            <span class="status status-{{ analysis.status }}">{{ analysis.get_status_display }}</span>
+        </div>
+
+{% if analysis.error_message %}
+<div class="alert {% if analysis.status == 'failed' %}alert-danger{% else %}alert-warning{% endif %}">
+    {{ analysis.error_message }}
+</div>
+{% endif %}
+
+{% if analysis.status == "failed" %}
+<form method="post" action="{% url 'candidate_trainer:analysis_run' pk=analysis.pk %}" class="mb-4">
+    {% csrf_token %}
+    <button class="btn btn-primary" type="submit" data-busy="Повторяю анализ…">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        Повторить анализ
+    </button>
+</form>
+{% endif %}
+
+<div class="metric-strip" aria-label="Результаты анализа">
+    <div><span>Найдено</span><strong>{{ analysis.vacancies_found }}</strong></div>
+    <div><span>Обработано</span><strong>{{ analysis.vacancies_processed }}</strong></div>
+    <div><span>Навыков</span><strong>{{ analysis_skills|length }}</strong></div>
+</div>
+
+{% if analysis.status == "completed" %}
+<div id="skills" class="scroll-target"></div>
+<section class="content-section" aria-labelledby="skills-title">
+    <div class="section-heading">
+        <h2 id="skills-title">Требуемые навыки</h2>
+        {% if analysis_skills %}
+        <div id="interviews" class="scroll-target"></div>
+        {% if active_sessions %}
+        <div>
+            <p style="margin-bottom: 1rem; color: var(--muted);">
+                У вас {{ active_sessions|length }} активн{% if active_sessions|length == 1 %}ое{% else %}ых{% endif %} собеседовани{% if active_sessions|length == 1 %}е{% else %}я{% endif %}:
+            </p>
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                {% for session in active_sessions %}
+                <a class="btn btn-outline-primary" href="{% url 'candidate_trainer:interview_detail' pk=session.pk %}">
+                    Продолжить #{{ session.pk }} ({{ session.message_count }} сообщ.)
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'candidate_trainer:interview_create' pk=analysis.pk %}">
+            {% csrf_token %}
+            <button class="btn btn-dark" type="submit" data-busy="Готовлю первый вопрос…">
+                <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+                Начать новое собеседование
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table trainer-table align-middle">
+            <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>Навык</th>
+                    <th>Вакансии</th>
+                    <th>Частота</th>
+                    <th>Варианты</th>
+                    <th><span class="visually-hidden">Действие</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in analysis_skills %}
+                <tr>
+                    <td class="rank-cell">{{ item.rank }}</td>
+                    <td class="fw-semibold">{{ item.skill.canonical_name }}</td>
+                    <td>{{ item.vacancy_count }}</td>
+                    <td>{{ item.frequency_percent }}%</td>
+                    <td class="variant-cell">{{ item.variants|join:", " }}</td>
+                    <td class="text-end">
+                        <form method="post" action="{% url 'candidate_trainer:skill_explanation' pk=item.pk %}">
+                            {% csrf_token %}
+                            {% if item.global_explanation %}
+                            <button class="btn btn-sm btn-outline-secondary" type="submit"
+                                    data-busy="Обновляю…"
+                                    title="Объяснение уже существует. Нажмите для обновления.">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                                Посмотреть
+                            </button>
+                            {% else %}
+                            <button class="btn btn-sm btn-outline-primary" type="submit"
+                                    data-busy="Объясняю…">
+                                <i class="bi bi-book" aria-hidden="true"></i>
+                                Объяснить
+                            </button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="empty-cell">HH.ru не указал структурированные навыки.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% for item in analysis_skills %}
+{% if item.global_explanation %}
+<section class="content-section explanation-section" id="skill-{{ item.skill.id }}" aria-labelledby="explanation-title-{{ item.skill.id }}">
+    <div class="section-heading">
+        <h3 id="explanation-title-{{ item.skill.id }}">{{ item.skill.canonical_name }}</h3>
+        <small class="text-muted">Обновлено: {{ item.global_explanation.created_at|date:"d.m.Y H:i" }}</small>
+    </div>
+    <div class="explanation-text">
+        {{ item.global_explanation.content|render_markdown }}
+    </div>
+    {% if item.global_explanation.sources %}
+    <details class="source-details">
+        <summary>Источники контекста</summary>
+        <ul class="source-list">
+            {% for source in item.global_explanation.sources %}
+            <li>
+                {% if source.url %}
+                <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.title }}</a>
+                {% else %}
+                {{ source.title }}
+                {% endif %}
+                <span>{{ source.source_type }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</section>
+{% endif %}
+{% endfor %}
+
+<div id="vacancies" class="scroll-target"></div>
+<section class="content-section" aria-labelledby="vacancies-title">
+    <div class="section-heading">
+        <h2 id="vacancies-title">Исходные вакансии</h2>
+        <span class="section-note">{{ analysis.vacancies_processed }} карточек</span>
+    </div>
+    <div class="vacancy-list">
+        {% for vacancy in analysis.vacancies.all %}
+        <article class="vacancy-row">
+            <div>
+                <h3>{{ vacancy.title }}</h3>
+                <p>{{ vacancy.employer|default:"Работодатель не указан" }}</p>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary icon-link-button"
+               href="{{ vacancy.url }}"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Открыть вакансию {{ vacancy.title }} на HH.ru"
+               title="Открыть на HH.ru">
+                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+            </a>
+        </article>
+        {% empty %}
+        <p class="empty-cell">Карточек нет.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+    </div><!-- .analysis-content -->
+</div><!-- .analysis-layout -->
+
+<script>
+// Sticky sidebar navigation with active section highlighting
+(function() {
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const scrollTargets = document.querySelectorAll('.scroll-target');
+
+    if (!sidebarLinks.length || !scrollTargets.length) return;
+
+    // Smooth scroll to section
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const target = document.getElementById(targetId);
+
+            if (target) {
+                const offset = 80; // Header height
+                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Highlight active section on scroll
+    const observerOptions = {
+        root: null,
+        rootMargin: '-100px 0px -66%',
+        threshold: 0
+    };
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    scrollTargets.forEach(target => observer.observe(target));
+})();
+</script>
+
+{% endblock %}

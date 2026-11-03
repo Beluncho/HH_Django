@@ -1,0 +1,42 @@
+Using credentials: admin / ********
+=== Авторизация ===
+После логина: http://localhost:8000/
+
+=== Переход в Trainer ===
+Trainer URL: http://localhost:8000/trainer/
+Найдено анализов: 1
+
+=== Анализ: /trainer/analyses/1/ ===
+✓ Скриншот анализа сохранён
+
+Найдено интервью: 1
+
+=== Интервью: /trainer/interviews/1/ ===
+✓ Скриншот интервью сохранён
+
+Найдено инсайтов: 1
+
+--- Инсайт 1 ---
+Пробелов: 1
+  [1] Text: Не упомянуты декораторы с аргументами (фабрики декораторов),
+      HTML: Не упомянуты декораторы с аргументами (фабрики декораторов), которые часто встре
+Рекомендаций: 2
+  [1] Text: Упомяните, что при написании декораторов для методов класса 
+      HTML: Упомяните, что при написании декораторов для методов класса важно учитывать self
+  [2] Text: Рассмотрите вариант использования декораторов для валидации 
+      HTML: Рассмотрите вариант использования декораторов для валидации входных данных или к
+
+============================================================
+✅ PASS: Все маркеры удалены корректно!
+
+Нажмите Enter для закрытия браузера...Traceback (most recent call last):
+  File "C:\Users\User\PycharmProjects\HH_Django\test_screenshots.py", line 130, in <module>
+    sys.exit(0)
+SystemExit: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\User\PycharmProjects\HH_Django\test_screenshots.py", line 139, in <module>
+    input("\n������� Enter ��� �������� ��������...")
+EOFError: EOF when reading a line

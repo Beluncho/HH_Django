@@ -16,6 +16,11 @@ WORKDIR $APP_HOME
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
+<<<<<<< HEAD
+=======
+    && pip install --no-cache-dir torch==2.6.0 \
+        --index-url https://download.pytorch.org/whl/cpu \
+>>>>>>> AI_Agents_diploma
     && pip install --no-cache-dir -r requirements.txt
 
 COPY . .

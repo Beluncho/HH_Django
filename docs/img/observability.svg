@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 165" width="1200" height="165" role="img"
+     aria-label="Путь сбоя модели: вызов, ответ провайдера с ошибкой, строка в журнале, понятная подсказка пользователю"
+     font-family="Segoe UI, PT Sans, system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="ob-arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8a6512"/>
+    </marker>
+  </defs>
+
+  <style>
+    .h   { font-size: 20px; font-weight: 650; fill: #0f2027; }
+    .t   { font-size: 16px; fill: #22333b; }
+    .m   { font-size: 14px; fill: #4d5c66; }
+    .mono{ font-family: "Cascadia Mono", Consolas, "Courier New", monospace; }
+    .bad { fill: #a32b2b; }
+  </style>
+
+  <!-- 1. Вызов -->
+  <g>
+    <rect x="20" y="12" width="263" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="20" y="12" width="263" height="4" rx="2" fill="#ffd700"/>
+    <text class="h" x="38" y="46">Вызов модели</text>
+    <text class="t" x="38" y="74">объяснение навыка</text>
+    <text class="t" x="38" y="96">первый вопрос</text>
+    <text class="t" x="38" y="118">оценка ответа</text>
+    <text class="t" x="38" y="140">проверка настроек</text>
+  </g>
+
+  <line x1="289" y1="78" x2="313" y2="78" stroke="#8a6512" stroke-width="2" marker-end="url(#ob-arrow)"/>
+
+  <!-- 2. Сбой провайдера -->
+  <g>
+    <rect x="319" y="12" width="263" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="319" y="12" width="263" height="4" rx="2" fill="#a32b2b"/>
+    <text class="h bad" x="337" y="46">Провайдер отвечает 400</text>
+    <text class="t" x="337" y="74">в теле ответа — причина,</text>
+    <text class="t" x="337" y="96">которую по коду не видно</text>
+    <text class="mono m" x="337" y="128" font-size="13">{"detail":"Model not supported"}</text>
+  </g>
+
+  <line x1="588" y1="78" x2="612" y2="78" stroke="#8a6512" stroke-width="2" marker-end="url(#ob-arrow)"/>
+
+  <!-- 3. Журнал -->
+  <g>
+    <rect x="618" y="12" width="263" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="618" y="12" width="263" height="4" rx="2" fill="#ffd700"/>
+    <text class="h" x="636" y="46">Строка в журнале</text>
+    <text class="t" x="636" y="74">операция · статус · провайдер</text>
+    <text class="t" x="636" y="96">HTTP-код и тело ответа</text>
+    <text class="t" x="636" y="118">длительность · токены</text>
+    <text class="m" x="636" y="140">фиксируется и успех, и сбой</text>
+  </g>
+
+  <line x1="887" y1="78" x2="911" y2="78" stroke="#8a6512" stroke-width="2" marker-end="url(#ob-arrow)"/>
+
+  <!-- 4. Пользователь -->
+  <g>
+    <rect x="917" y="12" width="263" height="132" rx="12" fill="#ffffff" stroke="#dde3e9"/>
+    <rect x="917" y="12" width="263" height="4" rx="2" fill="#ffd700"/>
+    <text class="h" x="935" y="46" font-size="18">Подсказка пользователю</text>
+    <text class="t" x="935" y="74">вместо кода состояния —</text>
+    <text class="t" x="935" y="96">что именно править:</text>
+    <text class="m" x="935" y="124" font-style="italic">провайдер не обслуживает</text>
+    <text class="m" x="935" y="142" font-style="italic">модель — проверьте LLM_MODEL</text>
+  </g>
+</svg>

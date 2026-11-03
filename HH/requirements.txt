@@ -13,6 +13,10 @@ gunicorn==23.0.0
 idna==3.10
 Markdown==3.7
 mixer==7.2.2
+<<<<<<< HEAD
+=======
+openai>=1.65.0,<3.0.0
+>>>>>>> AI_Agents_diploma
 pillow==11.1.0
 psycopg2-binary==2.9.10
 pycbrf==1.1.0
@@ -20,8 +24,16 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2020.5
 requests==2.32.3
+<<<<<<< HEAD
 setuptools==75.8.2
 six==1.17.0
 sqlparse==0.5.3
+=======
+sentence-transformers==3.4.1
+setuptools==75.8.2
+six==1.17.0
+sqlparse==0.5.3
+torch==2.6.0
+>>>>>>> AI_Agents_diploma
 tzdata==2025.1
 urllib3==2.3.0

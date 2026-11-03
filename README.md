@@ -1,135 +1,189 @@
-# HH Django — платформа поиска работы + AI-модуль
+# Candidate Trainer — AI-модуль HH Django
 
 [![Django Version](https://img.shields.io/badge/Django-5.1.6-green)](https://www.djangoproject.com/)
 [![DRF Version](https://img.shields.io/badge/DRF-3.15.2-blue)](https://www.django-rest-framework.org/)
 [![Python Version](https://img.shields.io/badge/Python-3.12+-yellow)](https://www.python.org/)
 
-Учебный проект, выросший из первого диплома во второй. Сначала — платформа
-поиска работы и сотрудников на Django и DRF: пользователи, вакансии,
-работодатели, поиск через HH.ru, REST API, PostgreSQL, Docker и деплой на
-сервер. Затем — AI-модуль, который анализирует требования вакансий, объясняет
-навыки с опорой на базу знаний и проводит тестовое собеседование.
-
-| | Диплом 1 — платформа | Диплом 2 — AI-модуль |
-|---|---|---|
-| Что решает | найти вакансии и работодателей | объяснить требования и подготовить кандидата |
-| Ветка | `main` | [`AI_Agents_diploma`](https://github.com/Beluncho/HH_Django/tree/AI_Agents_diploma) |
-| Данные | вакансии, работодатели, профили | снимки вакансий, навыки, база знаний, собеседования |
-| Логика | CRUD, поиск, HH API, DRF | анализ, embeddings, RAG, LLM, оценка ответов |
-| Инфраструктура | PostgreSQL, Docker, Nginx, Gunicorn | то же + хранение векторов в PostgreSQL |
-| Тесты | тесты приложений | 90 тестов в 10 файлах без внешних запросов |
-
-**Презентация защиты второго диплома:** <https://beluncho.github.io/HH_Django/>
-
-Отчёты второго диплома: [эксперименты](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md) ·
-[презентация](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage5_report.md) ·
-[наблюдаемость](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage6_report.md).
-
----
-
-## Диплом 1 — платформа поиска работы
-
-### Возможности
-
-- **Пользователи и роли**: соискатели и работодатели, кастомная модель
-  `WebSiteUser`, профиль с фото и описанием.
-- **Вакансии**: список с пагинацией, карточка, создание и редактирование,
-  фильтр по названию и работодателю.
-- **Работодатели**: список, карточка, создание, редактирование, удаление;
-  доступ к чужим карточкам ограничен владельцем или администратором.
-- **Поиск HH.ru**: запрос уходит в API HH.ru, результаты показываются отдельным
-  списком и не сохраняются в локальную базу.
-- **Парсер**: management-команда `full_db` сохраняет найденные вакансии и
-  работодателей в базу.
-- **REST API**: viewset-ы вакансий и работодателей с токен-аутентификацией и
-  правами «читать может любой, писать — работодатель или администратор».
-- **Админка** для управления контентом и пользователями.
-- **Docker**: dev- и prod-конфигурации, PostgreSQL 16, Gunicorn и Nginx в
-  production.
-
-### Стек
-
-Django 5.1.6, Django REST Framework 3.15.2, PostgreSQL 16, Docker Compose,
-Nginx, Gunicorn, `requests`, Pillow.
-
-### Деплой
-
-Скриншоты из процесса развёртывания на сервере:
-
-| | |
-|---|---|
-| ![Веб-приложение](OpenWeb.png) | ![Подключение по SSH](PuTTY.png) |
-| Приложение в браузере | Подключение к серверу по SSH |
-| ![Виртуальная машина](VirtualBox.png) | ![Сервер в VirtualBox](VirtualBox%20-%20server.png) |
-| Виртуальная машина | Сервер в VirtualBox |
-| ![PostgreSQL](PostgreSQL.png) | ![FileZilla](FileZilla.png) |
-| PostgreSQL | Передача файлов через FileZilla |
-
-### API
-
-Базовый префикс — `/api/v0/`.
-
-| Метод | URL | Что делает |
-|---|---|---|
-| `GET` | `/api/v0/vacancies/` | список вакансий, пагинация |
-| `POST` | `/api/v0/vacancies/` | создать вакансию (работодатель или админ) |
-| `GET` | `/api/v0/vacancies/{id}/` | карточка вакансии |
-| `GET` | `/api/v0/employers/` | список работодателей |
-| `POST` | `/api/v0/employers/` | создать работодателя |
-| `POST` | `/user/create-token/` | создать токен для текущего пользователя |
-| `GET` | `/user/update-token-ajax/` | вернуть/обновить токен в JSON |
-
-Аутентификация — `Token` или `Session`. Чтение доступно без авторизации,
-запись — работодателю или администратору.
-
----
-
-## Диплом 2 — AI-модуль `candidate_trainer`
-
+Второй диплом: модуль анализа вакансий и подготовки к собеседованию для
+платформы поиска работы [HH Django](https://github.com/Beluncho/HH_Django).
 Платформа умела искать вакансии, но не объясняла, что именно требуется
-кандидату. Модуль добавляет три сценария:
+кандидату. Модуль закрывает три сценария:
 
-1. **Анализ требований** — собрать до 20 вакансий HH.ru по запросу и региону,
+1. **Анализ требований** — по запросу и региону собрать вакансии HH.ru,
    нормализовать навыки и посчитать, что действительно требуют.
-2. **Объяснение навыка** — зачем навык нужен и что подтянуть, с цитатами из
-   базы знаний (RAG).
-3. **Тестовое собеседование** — вопросы по навыкам из анализа, оценка ответов
-   по трём шкалам и рекомендации.
+2. **Объяснение навыка** — показать, зачем навык нужен в вакансиях и что
+   стоит подтянуть, с опорой на базу знаний (RAG).
+3. **Тестовое собеседование** — задавать вопросы по навыкам из анализа,
+   оценивать ответы и сохранять разбор.
 
-### Что добавилось
+> Платформа, REST API и деплой — первый диплом, ветка `main`.
+> Модуль `candidate_trainer` живёт в ветке `AI_Agents_diploma`.
+> Презентация защиты: **https://beluncho.github.io/HH_Django/**
 
-- 12 моделей: анализ, снимки вакансий, навыки, база знаний, объяснения,
-  собеседования, журнал обращений к LLM;
-- 10 сервисных модулей вместо логики во views;
-- нормализация навыков: «Python 3», «питон» и «Python» — один навык;
-- частота навыка считается по вакансиям, а не по упоминаниям;
-- RAG на трёх коллекциях, локальные embeddings, cosine similarity;
+## Что было и что добавилось
+
+| | Первый диплом (`main`) | Второй диплом (`AI_Agents_diploma`) |
+|---|---|---|
+| Задача | найти вакансии и работодателей | объяснить требования и подготовить кандидата |
+| Данные | вакансии, работодатели, профили | снимки вакансий, нормализованные навыки, база знаний, сессии собеседований |
+| Логика | CRUD, поиск, HH API, DRF | анализ, embeddings, RAG, LLM, оценка ответов |
+| Наблюдаемость | логи Django | журнал обращений к LLM с телом ответа провайдера |
+| Тесты | тесты приложений | 90 тестов в 10 файлах, без внешних запросов |
+| Инфраструктура | PostgreSQL, Docker, Nginx, Gunicorn | те же контейнеры + PostgreSQL-хранилище векторов |
+
+## Возможности модуля
+
+- поиск до 20 вакансий HH.ru по запросу и региону, с кэшем повторных анализов;
+- нормализация навыков: «Python 3», «питон» и «Python» сводятся к одному навыку;
+- частота считается **по вакансиям**, а не по упоминаниям;
+- объяснение навыка с цитатами из базы знаний и ссылками на источники;
+- тестовое собеседование: первый вопрос, ответ кандидата, разбор по трём шкалам
+  (корректность, глубина, практика), рекомендации;
+- RAG на трёх коллекциях, локальные embeddings и cosine similarity;
 - LLM как подключаемый провайдер: любой OpenAI-совместимый API или `disabled`;
-- загрузка методичек в базу знаний из админки;
-- журнал обращений к модели с телом ответа провайдера;
-- 90 тестов в 10 файлах, без сети и внешних ключей.
+- загрузка методичек в базу знаний из админки и командой;
+- журнал всех обращений к модели: статус, HTTP-код, тело ошибки, время, токены —
+  без текстов промтов и ответов;
+- права доступа: чужой анализ не отдаётся даже по прямой ссылке.
 
-### Исследование
+## Устройство
 
-Шесть экспериментов на 20 вакансиях и 57 навыках: частота по вакансиям,
-`top-k = 5`, фрагмент 900 символов, MiniLM вместо хешей, две формулировки
-промтов и лимит ответа 4000 токенов. Подробности —
-[`docs/stage4_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md).
+```
+┌────────────────────────────────────────────────────────────┐
+│ Django: hhapp (вакансии) + userapp (пользователи)          │
+│                                                            │
+│  candidate_trainer                                         │
+│   views / templates ── dashboard, analysis, interview      │
+│        │                                                   │
+│        ├── services/analysis.py   HH API → нормализация →  │
+│        │                          навыки → снимки вакансий │
+│        ├── services/knowledge.py  коллекции, чанки,        │
+│        │                          embeddings, retrieval    │
+│        ├── services/interview.py  объяснение, вопросы,     │
+│        │                          оценка ответов           │
+│        ├── services/llm.py        OpenAI-совместимый клиент│
+│        └── services/llm_log.py    журнал обращений         │
+│                                                            │
+│  PostgreSQL: 12 моделей, векторы — JSON + cosine в коде    │
+└────────────────────────────────────────────────────────────┘
+```
 
-### Где смотреть
+Модуль не монолитный: 12 моделей и 10 сервисных модулей, каждый отвечает за
+свой шаг. Внешние вызовы (HH API и LLM) изолированы в клиентах, поэтому тесты
+работают без сети.
 
-- **Код модуля** — ветка [`AI_Agents_diploma`](https://github.com/Beluncho/HH_Django/tree/AI_Agents_diploma).
-- **Презентация** — <https://beluncho.github.io/HH_Django/>.
-- **Инструкция по запуску** — [`docs/candidate_trainer_setup.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/candidate_trainer_setup.md).
-- **Журнал LLM и админка** — [`docs/stage6_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage6_report.md).
+### Модели
 
-### Демо без ключей
+| Группа | Модели |
+|---|---|
+| Анализ | `VacancyAnalysis`, `HHVacancySnapshot`, `Skill`, `AnalysisSkill` |
+| База знаний | `KnowledgeCollection`, `KnowledgeDocument`, `KnowledgeChunk` |
+| Объяснения | `SkillExplanation` |
+| Собеседование | `InterviewSession`, `InterviewMessage`, `InterviewInsight` |
+| Наблюдаемость | `LLMRequestLog` |
+
+### Поток анализа вакансии
+
+1. Проверка запроса и региона, расчёт `cache_key`.
+2. Повторный запрос того же пользователя возвращает готовый анализ.
+3. Запрос к HH API (не больше 20 вакансий).
+4. Очистка HTML и извлечение навыков из описаний.
+5. Нормализация и слияние вариантов названий.
+6. Подсчёт частоты по вакансиям и ранжирование.
+7. Сохранение снимков вакансий и индексация фрагментов в `skill-core`.
+
+## RAG
+
+| Коллекция | Кто наполняет | Зачем |
+|---|---|---|
+| `skill-core` | вакансии и загруженные методички | объяснение навыков; обязательна |
+| `interview` | методички по собеседованию | дополнительные вопросы; опциональна |
+| `user_analytics` | выводы собеседований | приватная история пользователя |
+
+- Текст режется на фрагменты по 900 символов с перекрытием 120.
+- Векторы строит локальная модель `paraphrase-multilingual-MiniLM-L12-v2` (384).
+- Векторы хранятся в PostgreSQL как JSON, релевантность считается точным
+  cosine similarity — отдельный векторный сервер для этого объёма не нужен.
+- `INTERVIEW_RAG_ENABLED=1` только разрешает поиск. Коллекция `interview`
+  должна быть наполнена отдельно.
+
+## LLM как подключаемый компонент
+
+Провайдер задаётся настройками, а не кодом:
+
+```dotenv
+LLM_PROVIDER=OpenAI          # любое имя, кроме disabled
+LLM_MODEL=...
+LLM_BASE_URL=https://api.proxyapi.ru/v1
+LLM_API_KEY=...
+LLM_MAX_TOKENS=4000
+LLM_MAX_TOKENS_PARAM=max_tokens
+LLM_TEMPERATURE=0.2
+```
+
+- `LLM_PROVIDER=disabled` оставляет анализ вакансий рабочим, а генерацию
+  объяснений и собеседование отключает с понятным сообщением.
+- Имя модели нужно сверять с провайдером: убранная модель отвечает
+  `HTTP 400 Model not supported`.
+- Ответы модели не считаются инструкциями: текст вакансий и документов
+  передаётся как данные, а не как команды.
+
+## Исследование: шесть экспериментов
+
+Прогон на 20 вакансиях и 57 нормализованных навыках, скрипт-прогонщик
+`run_experiment` вместо ноутбука. Сырые блоки — в [`docs/stage4/`](docs/stage4/),
+отчёт — [`docs/stage4_report.md`](docs/stage4_report.md).
+
+| Эксперимент | Что проверяли | Выбор |
+|---|---|---|
+| Частота навыка | вакансии или упоминания | по вакансиям: по упоминаниям позицию меняют 56 навыков из 57 |
+| top-k | сколько фрагментов отдавать модели | 5 |
+| Размер фрагмента | 600 / 900 / 1200 символов | 900, перекрытие 120 |
+| Embeddings | hash или MiniLM | MiniLM |
+| Промт объяснения | две формулировки | v1 |
+| Рубрика оценки | две формулировки | v1 для кандидата, v2 как журнал обоснований |
+| Лимит ответа | 1200 / 1600 / 4000 токенов | 4000: на меньших ответ обрывался |
+
+## Наблюдаемость
+
+`LLMRequestLog` пишется на каждый вызов модели — и удачный, и неудачный.
+Главное поле — `error_detail`: тело ответа провайдера. Без него ошибка вида
+«HTTP 400» недиагностируема.
+
+| Пишем | Не пишем |
+|---|---|
+| операцию, статус, HTTP-код | текст промта |
+| тело ошибки провайдера | ответ модели |
+| провайдера и имя модели | ключ доступа |
+| длительность и токены | |
+
+Ошибки переводятся в подсказки: «проверьте `LLM_MODEL`», «проверьте
+`LLM_API_KEY`», «провайдер ограничил частоту запросов». Запись в журнал не
+может сломать основную операцию: сбой логирования глушится, исходное
+исключение поднимается дальше.
+
+## Быстрый старт
+
+### Docker
 
 ```bash
 git clone https://github.com/Beluncho/HH_Django.git
 cd HH_Django
 git checkout AI_Agents_diploma
 
+cp .env.dev.example .env.dev
+# заполнить SECRET_KEY, HH_ACCESS_TOKEN, LLM_API_KEY
+
+docker compose up -d --build
+docker compose exec web python manage.py createsuperuser
+```
+
+Приложение — `http://127.0.0.1:8000/`, тренажёр — `/trainer/`,
+админка — `/admin/`.
+
+### Без Docker, на демо-данных
+
+```bash
 python -m venv venv
 venv\Scripts\activate                 # Linux/macOS: . venv/bin/activate
 pip install "Django==5.1.6" "djangorestframework==3.15.2" requests
@@ -140,104 +194,63 @@ cp .env.local.example .env.local      # достаточно SECRET_KEY
 ./run_local.sh runserver
 ```
 
-Вход в тренажёр — `http://127.0.0.1:8000/trainer/`, пользователь
-`demo` / `demo1234`. В демо-выгрузке уже есть анализ на 8 вакансий, 36 навыков,
-120 фрагментов базы знаний и 2 готовых объяснения.
+Вход: `demo` / `demo1234`. В демо-выгрузке уже есть анализ на 8 вакансий,
+36 навыков, 120 фрагментов базы знаний и 2 готовых объяснения. Ключи HH и LLM
+для просмотра не нужны.
 
----
+Полная инструкция — [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
 
-## Быстрый старт (платформа)
-
-### Docker
+## Тесты
 
 ```bash
-git clone https://github.com/Beluncho/HH_Django.git
-cd HH_Django
-
-cp .env.dev.example .env.dev
-# заполнить SECRET_KEY, HH_USER_AGENT и HH_ACCESS_TOKEN
-
-docker compose up -d --build
-docker compose exec web python manage.py createsuperuser
+./run_local.sh test candidate_trainer
+# 90 tests, 10 files
 ```
 
-Приложение — <http://127.0.0.1:8000/>, админка — `/admin/`.
+Тесты не ходят в HH API и LLM: клиенты подменяются фейками. Проверяются
+нормализация, анализ, клиент HH, база знаний и импорт, объяснения,
+собеседование, журнал LLM и представления.
 
-Production-конфигурация:
-
-```bash
-cp .env.prod.example .env.prod
-# заменить SECRET_KEY, POSTGRES_PASSWORD и ALLOWED_HOSTS
-
-docker compose -f docker-compose.prod.yml up -d --build
-# http://127.0.0.1:1337/
-```
-
-### Без Docker
-
-```bash
-python -m venv venv
-venv\Scripts\activate                 # Linux/macOS: . venv/bin/activate
-pip install -r HH/requirements.txt
-
-export SECRET_KEY=local-secret
-export DEBUG=1
-export ALLOWED_HOSTS="localhost 127.0.0.1"
-export HH_USER_AGENT="HH_Django/1.0 (you@example.com)"
-
-cd HH
-python manage.py migrate
-python manage.py runserver
-```
-
-Без PostgreSQL используется SQLite (`HH/db.sqlite3`). Переменные окружения
-читаются из процесса: файл `.env` Django сам не загружает.
-
-### Переменные HH.ru
-
-```dotenv
-HH_API_DOMAIN=https://api.hh.ru/
-HH_ACCESS_TOKEN=...          # токен приложения HH.ru
-HH_USER_AGENT=HH_Django/1.0 (you@example.com)
-HH_REQUEST_TIMEOUT=10
-```
-
-Токен нужен для запросов к HH API; без него поиск вернёт понятную ошибку.
-
----
-
-## Структура
+## Структура модуля
 
 ```text
-HH_Django/
-├── HH/
-│   ├── HH/                  # настройки, urls, wsgi
-│   ├── hhapp/               # вакансии, работодатели, HH API, DRF
-│   ├── userapp/             # WebSiteUser, профиль, регистрация, токены
-│   ├── candidate_trainer/   # AI-модуль (ветка AI_Agents_diploma)
-│   ├── templates/, static/
-│   └── requirements.txt
-├── docs/                    # отчёты и презентация (AI-ветка)
-├── nginx/
-├── docker-compose.yml
-└── docker-compose.prod.yml
+HH/candidate_trainer/
+├── models.py                 # 12 моделей
+├── views.py, urls.py         # dashboard, анализ, собеседование
+├── services/
+│   ├── analysis.py           # сбор и анализ вакансий
+│   ├── hh_client.py          # клиент HH API
+│   ├── normalization.py      # нормализация навыков
+│   ├── embeddings.py         # локальные векторы
+│   ├── knowledge.py          # чанки, embeddings, retrieval
+│   ├── knowledge_import.py   # импорт методичек
+│   ├── interview.py          # объяснения и собеседование
+│   ├── llm.py                # OpenAI-совместимый клиент
+│   ├── llm_log.py            # журнал обращений
+│   └── prompts.py            # шаблоны промтов
+├── management/commands/      # run_experiment, import_knowledge, ...
+├── templates/, static/       # интерфейс тренажёра
+├── tests/                    # 90 тестов
+└── docs/                     # описание команд
 ```
 
 ## Документация
 
-- [`AI_Agents_diploma/docs/candidate_trainer_setup.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/candidate_trainer_setup.md) — запуск AI-модуля, RAG, LLM;
-- [`AI_Agents_diploma/docs/stage4_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md) — эксперименты;
-- [`AI_Agents_diploma/docs/stage6_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage6_report.md) — журнал LLM и администрирование;
-- [Презентация](https://beluncho.github.io/HH_Django/).
+- [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md) — запуск,
+  переменные окружения, RAG, demo-данные;
+- [`docs/stage4_report.md`](docs/stage4_report.md) — эксперименты и выбор параметров;
+- [`docs/stage5_report.md`](docs/stage5_report.md) — презентация защиты;
+- [`docs/stage6_report.md`](docs/stage6_report.md) — журнал LLM и загрузка базы знаний;
+- [`HH/candidate_trainer/docs/`](HH/candidate_trainer/docs/) — команды
+  `run_analysis_demo` и `run_experiment`.
 
 ## Ограничения
 
-- Поиск HH.ru ограничен 20 вакансиями за запрос; результаты поиска не
-  сохраняются в локальную базу — для этого есть команда `full_db`.
-- Повторный запуск `full_db` может добавить дубликаты вакансий.
-- Аутентификация API — токен или сессия; OAuth-поток HH.ru не реализован.
-- AI-модуль доступен только в ветке `AI_Agents_diploma`; в `main` его нет.
-
-## Автор
-
-Александр Белов — [GitHub](https://github.com/Beluncho).
+- Анализ ограничен 20 вакансиями HH.ru за прогон — это осознанный лимит.
+- Качество объяснений зависит от наполнения `skill-core`: без методичек
+  объяснение вернёт понятную ошибку, а не выдуманный ответ.
+- RAG — точный перебор по cosine similarity; для больших корпусов нужен
+  pgvector или отдельный индекс.
+- Интерфейс — server-rendered HTML; JS только для индикатора «система работает»
+  и без него приложение остаётся рабочим.
+- Ветка `AI_Agents_diploma` содержит и платформу первого диплома, и модуль.

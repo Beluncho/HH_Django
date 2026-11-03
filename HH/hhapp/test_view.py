@@ -12,9 +12,14 @@ class ViewsHHappTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.fake = Faker()
+<<<<<<< HEAD
 
         VacancyCreateView.create_vacancy = mixer.blend(Vacancies)
         EmployerCreateView.create_employer = mixer.blend(Employer)
+=======
+        self.vacancy = mixer.blend(Vacancies)
+        self.employer = self.vacancy.employer
+>>>>>>> AI_Agents_diploma
 
     def test_statuses(self):
         response = self.client.get('/')
@@ -44,6 +49,7 @@ class ViewsHHappTest(TestCase):
         self.assertEqual(response.status_code, 302), ('error status code for not login user'
                                                       ' in create employer')
 
+<<<<<<< HEAD
         response = self.client.get('/employer_update/1/')
         self.assertEqual(response.status_code, 302), ('error status code for not login user'
                                                       ' in update employer')
@@ -53,6 +59,17 @@ class ViewsHHappTest(TestCase):
                                                       ' in delete employer')
 
         response = self.client.get('/employer_detail/1/')
+=======
+        response = self.client.get(f'/employer_update/{self.employer.pk}/')
+        self.assertEqual(response.status_code, 302), ('error status code for not login user'
+                                                      ' in update employer')
+
+        response = self.client.get(f'/employer_delete/{self.employer.pk}/')
+        self.assertEqual(response.status_code, 302), ('error status code for not login user'
+                                                      ' in delete employer')
+
+        response = self.client.get(f'/employer_detail/{self.employer.pk}/')
+>>>>>>> AI_Agents_diploma
         self.assertEqual(response.status_code, 302), ('error status code for not login user'
                                                       ' in detail employer')
 
@@ -67,6 +84,7 @@ class ViewsHHappTest(TestCase):
         self.assertEqual(response.status_code, 200), ('error status code for not login user'
                                                       ' in create employer')
 
+<<<<<<< HEAD
         response = self.client.get('/employer_detail/1/')
         self.assertEqual(response.status_code, 200), ('error status code for login user'
                                                       ' in detail employer')
@@ -76,6 +94,17 @@ class ViewsHHappTest(TestCase):
                                                       ' in update employer')
 
         response = self.client.get('/employer_delete/1/')
+=======
+        response = self.client.get(f'/employer_detail/{self.employer.pk}/')
+        self.assertEqual(response.status_code, 200), ('error status code for login user'
+                                                      ' in detail employer')
+
+        response = self.client.get(f'/employer_update/{self.employer.pk}/')
+        self.assertEqual(response.status_code, 200), ('error status code for login user'
+                                                      ' in update employer')
+
+        response = self.client.get(f'/employer_delete/{self.employer.pk}/')
+>>>>>>> AI_Agents_diploma
         self.assertEqual(response.status_code, 200), ('error status code for login user'
                                                       ' in delete employer')
 
@@ -94,4 +123,8 @@ class ViewsHHappTest(TestCase):
         self.client.login(username=user_name, password=password)
 
         response = self.client.get('/employer_create/')
+<<<<<<< HEAD
         self.assertEqual(response.status_code, 403), 'login user and not employer, create employer'
+=======
+        self.assertEqual(response.status_code, 403), 'login user and not employer, create employer'
+>>>>>>> AI_Agents_diploma

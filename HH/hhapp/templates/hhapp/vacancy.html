@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+<<<<<<< HEAD
 {% block header %}
         <!-- Masthead-->
         <header class="masthead">
@@ -94,3 +95,91 @@
     <a class="btn btn-light btn-xl" href="{% url 'hhapp:index' %}">Home page</a>
 </section>
 {% endblock %}
+=======
+{% block navigation %}
+<li class="nav-item"><a class="nav-link" href="{% url 'hhapp:index' %}">Главная</a></li>
+{% endblock %}
+
+{% block header %}
+<header class="masthead">
+    <div class="container px-4 px-lg-5 h-100">
+        <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+            <div class="col-lg-8 align-self-end">
+                <h1 class="text-white font-weight-bold">{{ object.vac_name }}</h1>
+                <hr class="divider" />
+            </div>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block section_services %}
+<section class="page-section">
+    <div class="container px-4 px-lg-5">
+        <!-- Breadcrumbs -->
+        {% include 'components/breadcrumbs.html' with items=breadcrumb_items %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-building me-1" aria-hidden="true"></i>Работодатель
+                            </dt>
+                            <dd class="col-sm-8">{{ object.employer.employer_name }}</dd>
+
+                            {% if object.salaryFrom %}
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-cash me-1" aria-hidden="true"></i>Зарплата
+                            </dt>
+                            <dd class="col-sm-8">от {{ object.salaryFrom }} ₽</dd>
+                            {% endif %}
+
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Опубликовано
+                            </dt>
+                            <dd class="col-sm-8">
+                                <time datetime="{{ object.published|date:'Y-m-d' }}">
+                                    {{ object.published|date:"d.m.Y H:i" }}
+                                </time>
+                            </dd>
+
+                            {% if object.url_vac %}
+                            <dt class="col-sm-4 text-muted">
+                                <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>Ссылка
+                            </dt>
+                            <dd class="col-sm-8">
+                                <a href="{{ object.url_vac }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="btn btn-outline-primary btn-sm"
+                                   aria-label="Открыть вакансию на HH.ru (откроется в новой вкладке)">
+                                    Открыть на HH.ru
+                                    <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i>
+                                </a>
+                            </dd>
+                            {% endif %}
+                        </dl>
+
+                        {% if object.description %}
+                        <hr class="my-4">
+                        <h2 class="h5 text-muted mb-3">Описание</h2>
+                        <div class="vacancy-description">
+                            {{ object.description|linebreaks }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'hhapp:index' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Назад к списку
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+>>>>>>> AI_Agents_diploma

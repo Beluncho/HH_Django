@@ -79,6 +79,18 @@ class VacDetailView(DetailView,RemoveDuplicContextMixin):
     model = Vacancies
     template_name = 'hhapp/vacancy.html'
 
+<<<<<<< HEAD
+=======
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb_items'] = [
+            {'title': 'Главная', 'url': reverse('hhapp:index')},
+            {'title': 'Вакансии', 'url': reverse('hhapp:index')},
+            {'title': self.object.vac_name},
+        ]
+        return context
+
+>>>>>>> AI_Agents_diploma
 
 class FormPostValidMixin(FormMixin):
 
@@ -109,6 +121,17 @@ class EmployersListView(ListView):
     def get_queryset(self):
         return Employer.objects.all().order_by('id')
 
+<<<<<<< HEAD
+=======
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb_items'] = [
+            {'title': 'Главная', 'url': reverse('hhapp:index')},
+            {'title': 'Работодатели'},
+        ]
+        return context
+
+>>>>>>> AI_Agents_diploma
 class EmployerDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView,RemoveDuplicContextMixin):
     model = Employer
     template_name = 'hhapp/employer_detail.html'
@@ -116,6 +139,14 @@ class EmployerDetailView(LoginRequiredMixin,UserPassesTestMixin,DetailView,Remov
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = VacanciesEmployerForm()
+<<<<<<< HEAD
+=======
+        context['breadcrumb_items'] = [
+            {'title': 'Главная', 'url': reverse('hhapp:index')},
+            {'title': 'Работодатели', 'url': reverse('hhapp:employers_list')},
+            {'title': self.object.employer_name},
+        ]
+>>>>>>> AI_Agents_diploma
         return context
 
     def test_func(self):
@@ -160,7 +191,11 @@ class EmployerUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
         return self.request.user.is_employer
 
 class EmployerDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
+<<<<<<< HEAD
     template_name = 'hhapp/employer_delete_confirm.HTML'
+=======
+    template_name = 'hhapp/employer_delete_confirm.html'
+>>>>>>> AI_Agents_diploma
     model = Employer
     success_url = reverse_lazy('hhapp:employers_list')
 
@@ -200,4 +235,7 @@ class EmployerDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
 #     return render(request, 'hhapp/vacancy.html',
 #                   context={'vacancy': vacancy})
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> AI_Agents_diploma

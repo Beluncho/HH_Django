@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import requests
+=======
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+>>>>>>> AI_Agents_diploma
 from django.shortcuts import render,reverse, HttpResponseRedirect
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
@@ -26,10 +30,22 @@ class UserProfileUpdateView(UpdateView):
     success_url = reverse_lazy('hhapp:index')
 
 
+<<<<<<< HEAD
 class UserProfileView(DetailView, UserProfileUpdateView):
     template_name = 'userapp/profile.html'
     model = Profile
 
+=======
+class UserProfileView(LoginRequiredMixin, UserPassesTestMixin, DetailView, UserProfileUpdateView):
+    template_name = 'userapp/profile.html'
+    model = Profile
+
+    def test_func(self):
+        # Проверяем, что текущий пользователь смотрит свой профиль
+        profile = self.get_object()
+        return self.request.user == profile.user
+
+>>>>>>> AI_Agents_diploma
 def create_token(request):
     user = request.user
     Token.objects.create(user=user)
