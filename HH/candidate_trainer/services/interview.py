@@ -337,11 +337,16 @@ def submit_interview_answer(
         f"{answer.skill.canonical_name if answer.skill else ''} {question_text}",
         retriever,
     )
+
+    # Выбираем следующий навык ДО вызова LLM, чтобы передать в промт
+    next_skill = _select_next_skill(session)
+
     system_prompt, prompt_messages = evaluation_prompt(
         question_text,
         answer.content,
         answer.skill,
         contexts,
+        next_skill=next_skill,
     )
     llm_client = llm_client or get_llm_client()
     try:
@@ -364,7 +369,7 @@ def submit_interview_answer(
         if hasattr(answer, "answer_insight"):
             return answer.answer_insight
         locked = InterviewSession.objects.select_for_update().get(pk=session.pk)
-        next_skill = _select_next_skill(locked)
+        # next_skill уже выбран выше, до вызова LLM
         insight = InterviewInsight.objects.create(
             session=locked,
             user=user,

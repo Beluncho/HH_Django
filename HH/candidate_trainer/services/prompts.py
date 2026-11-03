@@ -94,11 +94,12 @@ def initial_question_prompt(analysis, skills, contexts):
         "skills": [skill.canonical_name for skill in skills],
         "retrieved_context": _context_payload(contexts),
     }
+    first_skill = skills[0].canonical_name if skills else "общие знания"
     return SYSTEM_PROMPT, [
         {
             "role": "user",
             "content": (
-                "Задай один конкретный технический вопрос по первому навыку. "
+                f"Задай один конкретный технический вопрос по навыку: {first_skill}. "
                 "Не давай ответ и не добавляй оценку.\n"
                 f"<data>{json.dumps(payload, ensure_ascii=False)}</data>"
             ),
@@ -106,13 +107,28 @@ def initial_question_prompt(analysis, skills, contexts):
     ]
 
 
-def evaluation_prompt(question, answer, skill, contexts, *, variant="v1"):
+def evaluation_prompt(question, answer, skill, contexts, *, next_skill=None, variant="v1"):
+    current_skill_name = skill.canonical_name if skill else ""
+    next_skill_name = next_skill.canonical_name if next_skill else current_skill_name
+
     payload = {
-        "skill": skill.canonical_name if skill else "",
+        "skill": current_skill_name,
         "question": question,
         "candidate_answer": answer,
         "retrieved_context": _context_payload(contexts),
+        "next_skill": next_skill_name,
     }
+
+    # Инструкция для следующего вопроса
+    if next_skill and next_skill != skill:
+        next_question_instruction = (
+            f"Сформулируй один следующий вопрос по навыку: {next_skill_name}."
+        )
+    else:
+        next_question_instruction = (
+            f"Сформулируй один следующий вопрос по тому же навыку: {next_skill_name}."
+        )
+
     schema = {
         "correctness": "integer 0..5",
         "depth": "integer 0..5",
@@ -128,6 +144,7 @@ def evaluation_prompt(question, answer, skill, contexts, *, variant="v1"):
             "role": "user",
             "content": (
                 _instruction(_EVALUATION_INSTRUCTIONS, variant)
+                + next_question_instruction + "\n"
                 + f"<schema>{json.dumps(schema, ensure_ascii=False)}</schema>\n"
                 + f"<data>{json.dumps(payload, ensure_ascii=False)}</data>"
             ),

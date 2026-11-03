@@ -232,3 +232,42 @@ class InterviewServiceTest(TestCase):
 
         self.assertEqual(explanation.content, "Объяснение навыка")
         self.assertEqual(explanation.sources[0]["source_type"], "verified")
+
+    def test_interview_rotates_through_multiple_skills(self):
+        # Добавляем второй навык
+        skill2 = Skill.objects.create(
+            canonical_name="Django",
+            normalized_name="django",
+        )
+        AnalysisSkill.objects.create(
+            analysis=self.analysis,
+            skill=skill2,
+            vacancy_count=2,
+            frequency_percent="100.00",
+            rank=2,
+            variants=["Django"],
+        )
+
+        session = start_interview(analysis=self.analysis, user=self.user)
+        self.create_question(session)
+
+        # Первый ответ — LLM должен получить инструкцию про второй навык (Django)
+        llm = QueueLLMClient([self.evaluation()])
+        insight = submit_interview_answer(
+            session,
+            user=self.user,
+            content="Ответ про Python",
+            llm_client=llm,
+            embedding_service=self.embedding_service,
+        )
+
+        # Проверяем, что в промт передали next_skill=Django
+        call_system, call_messages, _ = llm.calls[0]
+        prompt_content = call_messages[0]["content"]
+        self.assertIn("Django", prompt_content)
+        self.assertIn("следующий вопрос", prompt_content.lower())
+
+        # Проверяем, что следующий вопрос привязан к Django
+        next_message = session.messages.order_by("-sequence").first()
+        self.assertEqual(next_message.skill, skill2)
+        self.assertEqual(session.current_skill, skill2)
