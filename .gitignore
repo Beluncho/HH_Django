@@ -129,6 +129,7 @@ LOCAL_SECRETS.md
 
 # Local planning notes (not for VCS)
 HH/candidate_trainer/docs/plan_local_runner.md
+HH/candidate_trainer/docs/explanatory_note.md
 demo_map.md
 
 # Decktape (сборочный инструмент для экспорта презентации в PDF)
