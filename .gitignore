@@ -199,11 +199,9 @@ make_screenshots.py
 filter_test_result.txt
 test_result.txt
 
-# Screenshots (except docs/)
-/*.png
-screenshots/
-
-# Temporary work files
-trainer_home.png
+# Temp/work screenshots (корневые, не относящиеся к документации)
+2026-10-23_*.png
 homepage.png
+trainer_home.png
+screenshots/
 WORK_SUMMARY.md
