@@ -19,7 +19,8 @@
 | Инфраструктура | PostgreSQL, Docker, Nginx, Gunicorn | то же + хранение векторов в PostgreSQL |
 | Тесты | тесты приложений | 90 тестов в 10 файлах без внешних запросов |
 
-**Презентация защиты второго диплома:** <https://beluncho.github.io/HH_Django/>
+**Презентация защиты второго диплома:** <https://beluncho.github.io/HH_Django/>  
+**Обзорная страница первого диплома:** <https://beluncho.github.io/HH_Django/project-overview.html>
 
 Отчёты второго диплома: [эксперименты](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md) ·
 [презентация](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage5_report.md) ·
