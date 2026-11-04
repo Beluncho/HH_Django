@@ -13,7 +13,6 @@
 | | Диплом 1 — платформа | Диплом 2 — AI-модуль |
 |---|---|---|
 | Что решает | найти вакансии и работодателей | объяснить требования и подготовить кандидата |
-| Ветка | `main` | [`AI_Agents_diploma`](https://github.com/Beluncho/HH_Django/tree/AI_Agents_diploma) |
 | Данные | вакансии, работодатели, профили | снимки вакансий, навыки, база знаний, собеседования |
 | Логика | CRUD, поиск, HH API, DRF | анализ, embeddings, RAG, LLM, оценка ответов |
 | Инфраструктура | PostgreSQL, Docker, Nginx, Gunicorn | то же + хранение векторов в PostgreSQL |
@@ -22,9 +21,9 @@
 **Презентация защиты второго диплома:** <https://beluncho.github.io/HH_Django/>  
 **Обзорная страница первого диплома:** <https://beluncho.github.io/HH_Django/project-overview.html>
 
-Отчёты второго диплома: [эксперименты](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md) ·
-[презентация](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage5_report.md) ·
-[наблюдаемость](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage6_report.md).
+Отчёты второго диплома: [эксперименты](docs/stage4_report.md) ·
+[презентация](docs/stage5_report.md) ·
+[наблюдаемость](docs/stage6_report.md).
 
 ---
 
@@ -115,21 +114,21 @@ Nginx, Gunicorn, `requests`, Pillow.
 Шесть экспериментов на 20 вакансиях и 57 навыках: частота по вакансиям,
 `top-k = 5`, фрагмент 900 символов, MiniLM вместо хешей, две формулировки
 промтов и лимит ответа 4000 токенов. Подробности —
-[`docs/stage4_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md).
+[`docs/stage4_report.md`](docs/stage4_report.md).
 
 ### Где смотреть
 
-- **Код модуля** — ветка [`AI_Agents_diploma`](https://github.com/Beluncho/HH_Django/tree/AI_Agents_diploma).
+- **Код модуля** — папка [`HH/candidate_trainer/`](https://github.com/Beluncho/HH_Django/tree/main/HH/candidate_trainer).
 - **Презентация** — <https://beluncho.github.io/HH_Django/>.
-- **Инструкция по запуску** — [`docs/candidate_trainer_setup.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/candidate_trainer_setup.md).
-- **Журнал LLM и админка** — [`docs/stage6_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage6_report.md).
+- **Обзорная страница первого диплома** — <https://beluncho.github.io/HH_Django/project-overview.html>.
+- **Инструкция по запуску** — [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md).
+- **Журнал LLM и админка** — [`docs/stage6_report.md`](docs/stage6_report.md).
 
 ### Демо без ключей
 
 ```bash
 git clone https://github.com/Beluncho/HH_Django.git
 cd HH_Django
-git checkout AI_Agents_diploma
 
 python -m venv venv
 venv\Scripts\activate                 # Linux/macOS: . venv/bin/activate
@@ -215,10 +214,10 @@ HH_Django/
 │   ├── HH/                  # настройки, urls, wsgi
 │   ├── hhapp/               # вакансии, работодатели, HH API, DRF
 │   ├── userapp/             # WebSiteUser, профиль, регистрация, токены
-│   ├── candidate_trainer/   # AI-модуль (ветка AI_Agents_diploma)
+│   ├── candidate_trainer/   # AI-модуль (диплом 2)
 │   ├── templates/, static/
 │   └── requirements.txt
-├── docs/                    # отчёты и презентация (AI-ветка)
+├── docs/                    # отчёты и презентации обоих дипломов
 ├── nginx/
 ├── docker-compose.yml
 └── docker-compose.prod.yml
@@ -226,10 +225,11 @@ HH_Django/
 
 ## Документация
 
-- [`AI_Agents_diploma/docs/candidate_trainer_setup.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/candidate_trainer_setup.md) — запуск AI-модуля, RAG, LLM;
-- [`AI_Agents_diploma/docs/stage4_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage4_report.md) — эксперименты;
-- [`AI_Agents_diploma/docs/stage6_report.md`](https://github.com/Beluncho/HH_Django/blob/AI_Agents_diploma/docs/stage6_report.md) — журнал LLM и администрирование;
-- [Презентация](https://beluncho.github.io/HH_Django/).
+- [`docs/candidate_trainer_setup.md`](docs/candidate_trainer_setup.md) — запуск AI-модуля, RAG, LLM;
+- [`docs/stage4_report.md`](docs/stage4_report.md) — эксперименты;
+- [`docs/stage6_report.md`](docs/stage6_report.md) — журнал LLM и администрирование;
+- [Презентация защиты](https://beluncho.github.io/HH_Django/).
+- [Обзорная страница первого диплома](https://beluncho.github.io/HH_Django/project-overview.html).
 
 ## Ограничения
 
@@ -237,7 +237,6 @@ HH_Django/
   сохраняются в локальную базу — для этого есть команда `full_db`.
 - Повторный запуск `full_db` может добавить дубликаты вакансий.
 - Аутентификация API — токен или сессия; OAuth-поток HH.ru не реализован.
-- AI-модуль доступен только в ветке `AI_Agents_diploma`; в `main` его нет.
 
 ## Автор
 
